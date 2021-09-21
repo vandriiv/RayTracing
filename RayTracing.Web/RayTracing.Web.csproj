@@ -13,8 +13,4 @@
     <ProjectReference Include="..\RayTracing.CalculationModel\RayTracing.CalculationModel.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>

@@ -1,25 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using RayTracing.CalculationModel.Models;
+using RayTracing.Web.Helpers;
+using RayTracing.Web.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RayTracing.Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IEnumerable<NameIdModel> ArrayTypes { get; private set; }
+
+        public IEnumerable<NameIdModel> AttenUnits { get; private set; }
+
+        public IEnumerable<NameIdModel> CalculationTypes { get; private set; }
+
+        public IEnumerable<NameIdModel> SoundSpeedClasses { get; private set; }
+
+        public IEnumerable<NameIdModel> SoundSpeedDistributions { get; private set; }
+
+        public IEnumerable<NameIdModel> SurfaceInterpolations { get; private set; }
+
+        public IEnumerable<NameIdModel> SurfacePropetyTypes { get; private set; }
+
+        public IEnumerable<NameIdModel> SurfaceTypes { get; private set; }
+
+        public IndexModel()
         {
-            _logger = logger;
         }
 
         public void OnGet()
         {
-
+            ArrayTypes = EnumUtils.GetValues<ArrayType>().Select(x => x.ToNameIdModel());
+            AttenUnits = EnumUtils.GetValues<AttenUnits>().Select(x => x.ToNameIdModel());
+            CalculationTypes = EnumUtils.GetValues<CalculationType>().Select(x => x.ToNameIdModel());
+            SoundSpeedClasses = EnumUtils.GetValues<SoundSpeedClass>().Select(x => x.ToNameIdModel());
+            SoundSpeedDistributions = EnumUtils.GetValues<SoundSpeedDistribution>().Select(x => x.ToNameIdModel());
+            SurfaceInterpolations = EnumUtils.GetValues<SurfaceInterpolation>().Select(x => x.ToNameIdModel());
+            SurfacePropetyTypes = EnumUtils.GetValues<SurfacePropertyType>().Select(x => x.ToNameIdModel());
+            SurfaceTypes = EnumUtils.GetValues<SurfaceType>().Select(x => x.ToNameIdModel());
         }
     }
 }
