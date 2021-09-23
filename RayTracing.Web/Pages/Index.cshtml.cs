@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using RayTracing.CalculationModel.Models;
 using RayTracing.Web.Helpers;
 using RayTracing.Web.Models;
@@ -26,11 +27,14 @@ namespace RayTracing.Web.Pages
 
         public IEnumerable<NameIdModel> SurfaceTypes { get; private set; }
 
+        [BindProperty]
+        public AcousticProblemDescription AcousticProblem { get; set; } = new AcousticProblemDescription();
+
         public IndexModel()
         {
         }
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
             ArrayTypes = EnumUtils.GetValues<ArrayType>().Select(x => x.ToNameIdModel());
             AttenUnits = EnumUtils.GetValues<AttenUnits>().Select(x => x.ToNameIdModel());
@@ -40,6 +44,13 @@ namespace RayTracing.Web.Pages
             SurfaceInterpolations = EnumUtils.GetValues<SurfaceInterpolation>().Select(x => x.ToNameIdModel());
             SurfacePropetyTypes = EnumUtils.GetValues<SurfacePropertyType>().Select(x => x.ToNameIdModel());
             SurfaceTypes = EnumUtils.GetValues<SurfaceType>().Select(x => x.ToNameIdModel());
+
+            return Page();
+        }
+
+        public IActionResult OnPost()
+        {
+            return Page();
         }
     }
 }
