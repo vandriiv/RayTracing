@@ -7,6 +7,11 @@ namespace RayTracing.Web.Helpers
     {
         public static double[] ToDoubleArray(this string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Array.Empty<double>();
+            }
+
             return value
                     .Split(' ')
                     .Select(str =>
@@ -26,6 +31,11 @@ namespace RayTracing.Web.Helpers
 
         public static double [,] ToDoubleMatrix(this string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new double[0, 0];
+            }
+
             var rows = value.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             var minColsCount = rows.Min(r => r.ToDoubleArray().Length);
 
@@ -44,6 +54,11 @@ namespace RayTracing.Web.Helpers
 
         public static bool IsValidNumericMatrix(this string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
             var rows = value.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             return rows.All(v => v.IsValidNumericArray());
         }

@@ -10,8 +10,6 @@ namespace RayTracing.CalculationModel.Calculation
     {
         public CalculationResult Calculate(Settings settings)
         {
-            settings.Source.CalculateThetas();
-
             CalculationResult result;
             switch (settings.Output.CalculationType)
             {

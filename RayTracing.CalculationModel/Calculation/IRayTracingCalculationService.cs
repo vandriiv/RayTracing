@@ -2,7 +2,7 @@
 
 namespace RayTracing.CalculationModel.Calculation
 {
-    interface IRayTracingCalculationService
+    public interface IRayTracingCalculationService
     {
         CalculationResult Calculate(Settings settings);
 

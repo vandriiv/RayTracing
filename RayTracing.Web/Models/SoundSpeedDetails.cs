@@ -14,10 +14,10 @@ namespace RayTracing.Web.Models
         [Display(Name = "Class of sound speed")]
         public SoundSpeedClass SoundSpeedClass { get; set; }
 
-        [Display(Name = "Number or points in range")]
+        [Display(Name = "Number of points in range")]
         public int NumberOfPointsInRange { get; set; }
 
-        [Display(Name = "Number or points in depth")]
+        [Display(Name = "Number of points in depth")]
         public int NumberOfPointsInDepth { get; set; }
 
         [Display(Name = "Range points")]
@@ -62,8 +62,7 @@ namespace RayTracing.Web.Models
         public double[] C1D { get; set; } = Array.Empty<double>();
 
         [Display(Name = "Sound speed at (z0)")]
-        [Required]
-        [NumericArray(ErrorMessage = "Please provide valid numerical values")]
+        [NumericArray(AllowEmpty = true, ErrorMessage = "Please provide valid numerical values")]
         public string C1DList
         {
             set
@@ -83,8 +82,7 @@ namespace RayTracing.Web.Models
         public double[,] C2D { get; set; } = new double[0, 0];
 
         [Display(Name = "Sound speed at (r0,z0)")]
-        [Required]
-        [NumericMatrix(ErrorMessage = "Please provide valid numerical values")]
+        [NumericMatrix(AllowEmpty = true, ErrorMessage = "Please provide valid numerical values")]
         public string C2DList
         {
             set

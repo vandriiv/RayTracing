@@ -3,15 +3,11 @@ using RayTracing.Web.Attributes;
 using RayTracing.Web.Helpers;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace RayTracing.Web.Models
 {
     public class AcousticProblemDescription
     {
-        [Display(Name = "Ray step")]
-        public double RayStep { get; set; }
-
         [Display(Name = "Source coordinate (r)")]
         public double SourceR { get; set; }
 
@@ -63,12 +59,19 @@ namespace RayTracing.Web.Models
         [Required]
         public SurfaceDetails Batimetry { get; set; } = new SurfaceDetails();
 
-        public CalculationType CalculationType { get; set; }
+        [Display(Name = "Number of hydrophones along range")]
+        public int NumberOfHydrophonesAlongRange { get; set; }
 
+        [Display(Name = "Number of hydrophones along depth")]
+        public int NumberOfHydrophonesAlogDepth { get; set; }
+
+        [Display(Name = "Array type")]
         public ArrayType HydrophoneArrayType { get; set; }
 
+        [Display(Name = "Hydrophones ranges")]
         public double[] HydrophoneRanges { get; set; } = Array.Empty<double>();
 
+        [Display(Name = "Hydrophones ranges")]
         [Required]
         [NumericArray(ErrorMessage = "Please provide valid numerical values")]
         public string HydrophoneRangesList
@@ -83,8 +86,10 @@ namespace RayTracing.Web.Models
             }
         }
 
+        [Display(Name = "Hydrophones depths")]
         public double[] HydrophoneDepths { get; set; } = Array.Empty<double>();
 
+        [Display(Name = "Hydrophones depths")]
         [Required]
         [NumericArray(ErrorMessage = "Please provide valid numerical values")]
         public string HydrophoneDepthsList
@@ -99,6 +104,10 @@ namespace RayTracing.Web.Models
             }
         }
 
+        [Display(Name = "Calculation type")]
+        public CalculationType CalculationType { get; set; }
+
+        [Display(Name = "Threshold (Eigenray parameter)")]
         public double Threshold { get; set; }
     }
 }

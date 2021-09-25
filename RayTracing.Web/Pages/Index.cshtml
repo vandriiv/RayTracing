@@ -10,24 +10,479 @@
     <!--begin::Form-->
     <form method="post">
         <div class="card-body">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (!Model.ModelState.IsValid)
+            {
+                <div class="row">
+                    <div class="alert alert-custom alert-outline-2x alert-outline-danger fade show mb-5" role="alert">
+                        <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger alert-text"></div>
+                        <div class="alert-close">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="row">
+                <div class="col-12">
+                    <h6>Source</h6>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SourceR"></label>
+                        <input type="number" asp-for="AcousticProblem.SourceR" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.SourceR" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SourceZ"></label>
+                        <input type="number" asp-for="AcousticProblem.SourceZ" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.SourceZ" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Frequency"></label>
+                        <input type="number" asp-for="AcousticProblem.Frequency" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.Frequency" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.RangeBoxStart"></label>
+                        <input type="number" asp-for="AcousticProblem.RangeBoxStart" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.RangeBoxStart" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.RangeBoxEnd"></label>
+                        <input type="number" asp-for="AcousticProblem.RangeBoxEnd" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.RangeBoxEnd" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="d-none d-md-block col-md-4"></div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.NumberOfThetas"></label>
+                        <input step="1" type="number" asp-for="AcousticProblem.NumberOfThetas" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.NumberOfThetas" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Theta0"></label>
+                        <input type="number" asp-for="AcousticProblem.Theta0" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.Theta0" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.ThetaN"></label>
+                        <input type="number" asp-for="AcousticProblem.ThetaN" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.ThetaN" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-group">
+                        <span class="mb-2 d-inline-block">
+                            <label asp-for="AcousticProblem.Thetas"></label>
+                            <button id="Calculate_Thetas_Btn" type="button" class="btn btn-sm btn-outline-primary ml-2">Calculate</button>
+                        </span>
+                        <textarea rows="4" asp-for="AcousticProblem.ThetasList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.ThetasList" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Sea surface</h6>
+                    <hr />
+                </div>
+            </div>
             <div class="row">
                 <div class="col-12 col-sm-6 col-md-6">
                     <div class="form-group">
-                        <label asp-for="AcousticProblem.Thetas"></label>
-                        <textarea rows="10" asp-for="AcousticProblem.ThetasList" class="form-control"></textarea>
-                        <span asp-validation-for="AcousticProblem.ThetasList" class="alert-danger"></span>
+                        <label asp-for="AcousticProblem.Altimetry.SurfaceType"></label>
+                        <select asp-for="AcousticProblem.Altimetry.SurfaceType" class="form-control">
+                            @foreach (var surfaceType in Model.SurfaceTypes)
+                            {
+                                <option value="@surfaceType.Id">@surfaceType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceType" class="alert-danger"></span>
                     </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
                     <div class="form-group">
-                        <label asp-for="AcousticProblem.SoundSpeed.C2D"></label>
-                        <textarea rows="10" asp-for="AcousticProblem.SoundSpeed.C2DList" class="form-control"></textarea>
+                        <label asp-for="AcousticProblem.Altimetry.SurfacePropertyType"></label>
+                        <select asp-for="AcousticProblem.Altimetry.SurfacePropertyType" class="form-control">
+                            @foreach (var propertyType in Model.SurfacePropetyTypes)
+                            {
+                                <option value="@propertyType.Id">@propertyType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfacePropertyType" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.SurfacePropertyType"></label>
+                        <select asp-for="AcousticProblem.Altimetry.SurfaceInterpolation" class="form-control">
+                            @foreach (var interpolationType in Model.SurfaceInterpolations)
+                            {
+                                <option value="@interpolationType.Id">@interpolationType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceInterpolation" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.SurfaceAttenUnits"></label>
+                        <select asp-for="AcousticProblem.Altimetry.SurfaceAttenUnits" class="form-control">
+                            @foreach (var unit in Model.AttenUnits)
+                            {
+                                <option value="@unit.Id">@unit.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceAttenUnits" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.NumSurfaceCoords"></label>
+                        <input type="number" asp-for="AcousticProblem.Altimetry.NumSurfaceCoords" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.Altimetry.NumSurfaceCoords" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.RList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.RList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.RList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.ZList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.ZList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.ZList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.CpList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.CpList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.CpList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.CsList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.CsList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.CsList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.ApList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.ApList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.ApList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.AsList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.AsList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.AsList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Altimetry.RhoList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Altimetry.RhoList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Altimetry.RhoList" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Sound speed</h6>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.SoundSpeedDistribution"></label>
+                        <select asp-for="AcousticProblem.SoundSpeed.SoundSpeedDistribution" class="form-control">
+                            @foreach (var ssc in Model.SoundSpeedDistributions)
+                            {
+                                <option value="@ssc.Id">@ssc.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceAttenUnits" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.SoundSpeedClass"></label>
+                        <select asp-for="AcousticProblem.SoundSpeed.SoundSpeedClass" class="form-control">
+                            @foreach (var ssc in Model.SoundSpeedClasses)
+                            {
+                                <option value="@ssc.Id">@ssc.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceAttenUnits" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.NumberOfPointsInRange"></label>
+                        <input type="number" asp-for="AcousticProblem.SoundSpeed.NumberOfPointsInRange" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.SoundSpeed.NumberOfPointsInRange" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.NumberOfPointsInDepth"></label>
+                        <input type="number" asp-for="AcousticProblem.SoundSpeed.NumberOfPointsInDepth" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.SoundSpeed.NumberOfPointsInDepth" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.RList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.SoundSpeed.RList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.SoundSpeed.RList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.ZList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.SoundSpeed.ZList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.SoundSpeed.ZList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12" id="C1DList">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.C1DList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.SoundSpeed.C1DList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.SoundSpeed.C1DList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12" id="C2DList">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.SoundSpeed.C2DList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.SoundSpeed.C2DList" class="form-control"></textarea>
                         <span asp-validation-for="AcousticProblem.SoundSpeed.C2DList" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Sea bottom</h6>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.SurfaceType"></label>
+                        <select asp-for="AcousticProblem.Batimetry.SurfaceType" class="form-control">
+                            @foreach (var surfaceType in Model.SurfaceTypes)
+                            {
+                                <option value="@surfaceType.Id">@surfaceType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Batimetry.SurfaceType" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.SurfacePropertyType"></label>
+                        <select asp-for="AcousticProblem.Batimetry.SurfacePropertyType" class="form-control">
+                            @foreach (var propertyType in Model.SurfacePropetyTypes)
+                            {
+                                <option value="@propertyType.Id">@propertyType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Batimetry.SurfacePropertyType" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.SurfacePropertyType"></label>
+                        <select asp-for="AcousticProblem.Batimetry.SurfaceInterpolation" class="form-control">
+                            @foreach (var interpolationType in Model.SurfaceInterpolations)
+                            {
+                                <option value="@interpolationType.Id">@interpolationType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Batimetry.SurfaceInterpolation" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.SurfaceAttenUnits"></label>
+                        <select asp-for="AcousticProblem.Batimetry.SurfaceAttenUnits" class="form-control">
+                            @foreach (var unit in Model.AttenUnits)
+                            {
+                                <option value="@unit.Id">@unit.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Batimetry.SurfaceAttenUnits" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.NumSurfaceCoords"></label>
+                        <input type="number" asp-for="AcousticProblem.Batimetry.NumSurfaceCoords" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.Batimetry.NumSurfaceCoords" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.RList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.RList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.RList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.ZList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.ZList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.ZList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.CpList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.CpList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.CpList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.CsList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.CsList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.CsList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.ApList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.ApList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.ApList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.AsList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.AsList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.AsList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Batimetry.RhoList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.Batimetry.RhoList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.Batimetry.RhoList" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Hydrophones</h6>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.HydrophoneArrayType"></label>
+                        <select asp-for="AcousticProblem.HydrophoneArrayType" class="form-control">
+                            @foreach (var arrayType in Model.ArrayTypes)
+                            {
+                                <option value="@arrayType.Id">@arrayType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.Altimetry.SurfaceAttenUnits" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.NumberOfHydrophonesAlongRange"></label>
+                        <input type="number" asp-for="AcousticProblem.NumberOfHydrophonesAlongRange" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.NumberOfHydrophonesAlongRange" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.NumberOfHydrophonesAlogDepth"></label>
+                        <input type="number" asp-for="AcousticProblem.NumberOfHydrophonesAlogDepth" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.NumberOfHydrophonesAlogDepth" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.HydrophoneRangesList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.HydrophoneRangesList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.HydrophoneRangesList" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.HydrophoneDepthsList"></label>
+                        <textarea rows="2" asp-for="AcousticProblem.HydrophoneDepthsList" class="form-control"></textarea>
+                        <span asp-validation-for="AcousticProblem.HydrophoneDepthsList" class="alert-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6>Output</h6>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.CalculationType"></label>
+                        <select asp-for="AcousticProblem.CalculationType" class="form-control">
+                            @foreach (var calculationType in Model.CalculationTypes)
+                            {
+                                <option value="@calculationType.Id">@calculationType.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcousticProblem.CalculationType" class="alert-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.Threshold"></label>
+                        <input type="number" asp-for="AcousticProblem.Threshold" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.Threshold" class="alert-danger"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="card-footer">
-            <button type="submit" class="btn btn-light-success mr-2">Submit</button>
+            <button type="submit" id="submit_Btn" class="btn btn-light-success mr-2">Submit</button>
         </div>
     </form>
     <!--end::Form-->
@@ -35,4 +490,94 @@
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        completed = () => {
+            alert('Posted using Unobtrusive AJAX');
+        };
+
+        $(function () {
+            $('#AcousticProblem_SoundSpeed_SoundSpeedDistribution').change((e) => {
+                const value = e.target.value;
+
+                const oneDimensionalWrapper = $("#C1DList");
+                const twoDimensionalWrapper = $("#C2DList");
+
+                const oneDimensionalInput = $("#AcousticProblem_SoundSpeed_C1DList");
+                const twoDimensionalInput = $("#AcousticProblem_SoundSpeed_C2DList");
+
+                if (value == 0) {
+                    oneDimensionalWrapper.show();
+                    twoDimensionalWrapper.hide();
+
+                    oneDimensionalInput.prop("disabled", false);
+                    twoDimensionalInput.prop("disabled", true);
+                    oneDimensionalInput.prop("readonly", false);
+                    twoDimensionalInput.prop("readonly", true);
+
+                    oneDimensionalInput.prop("data-val", true);
+                    twoDimensionalInput.prop("data-val", false);
+                }
+                else {
+                    oneDimensionalWrapper.hide();
+                    twoDimensionalWrapper.show();
+
+                    oneDimensionalInput.prop("disabled", true);
+                    twoDimensionalInput.prop("disabled", false);
+                    oneDimensionalInput.prop("readonly", true);
+                    twoDimensionalInput.prop("readonly", false);
+
+                    oneDimensionalInput.prop("data-val", false);
+                    twoDimensionalInput.prop("data-val", true);
+                }
+            });
+
+            $('#AcousticProblem_SoundSpeed_SoundSpeedDistribution').change();
+
+            $('#Calculate_Thetas_Btn').click(() => {
+                const theta0 = $("#AcousticProblem_Theta0").val();
+                const thetaN = $("#AcousticProblem_ThetaN").val();
+                const nOfThetas = $("#AcousticProblem_NumberOfThetas").val();
+
+                const thetas = [];
+                let dtheta = 0;
+
+                if (nOfThetas == 0 || (theta0 == 0 && thetaN == 0)) {
+                    return;
+                }
+
+                if (nOfThetas == 1) {
+                    thetas.push(theta0);
+                    dtheta = 0;
+                }
+                else if (nOfThetas == 2) {
+                    thetas.push(theta0);
+                    thetas.push(thetaN);
+                    dtheta = thetaN - theta0;
+                }
+                else {
+                    thetas.push(theta0);
+                    dtheta = (thetaN - theta0) / (nOfThetas - 1);
+
+                    for (let i = 1; i <= nOfThetas - 2; i++) {
+                        thetas.push(theta0 + dtheta * (i));
+                    }
+
+                    thetas.push(thetaN);
+                }
+
+                $("#AcousticProblem_ThetasList").val(thetas.map(t => Number(t).toFixed(3)).join(' '));
+            });
+
+            $('#submit_Btn').on('click', function (evt) {
+                evt.preventDefault();
+                $.post('', $('form').serialize())
+                    .done(function (data) {
+                        alert("second success");
+                    })
+                    .fail(function (error) {
+                        alert("error");
+                    });
+            });
+        });
+    </script>
 }

@@ -178,7 +178,7 @@ $.validator.addMethod( "bic", function( value, element ) {
  *   V. Agrarian Transformation
  *   W. Permanent establishments of non-resident in Spain
  *
- * [ C ]: Control Digit. It can be a number or a letter depending on T value:
+ * [ C ]: Control Digit. It can be a number of a letter depending on T value:
  * [ T ]  -->  [ C ]
  * ------    ----------
  *   A         Number

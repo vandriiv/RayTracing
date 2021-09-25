@@ -9,6 +9,8 @@ namespace RayTracing.Web.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class NumericArrayAttribute : ValidationAttribute, IClientModelValidator
     {
+        public bool AllowEmpty { get; set; } = false;
+
         public void AddValidation(ClientModelValidationContext context)
         {
             MergeAttribute(context.Attributes, "data-val", "true");
@@ -19,12 +21,9 @@ namespace RayTracing.Web.Attributes
         {
             var stringValue = (string)value;
 
-            if (!stringValue.IsValidNumericArray())
-            {
-                return new ValidationResult(ErrorMessage);
-            }
-
-            return ValidationResult.Success;
+            return AllowEmpty && string.IsNullOrEmpty(stringValue) || stringValue.IsValidNumericArray()
+                ? ValidationResult.Success
+                : new ValidationResult(ErrorMessage);
         }
 
         private static bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)

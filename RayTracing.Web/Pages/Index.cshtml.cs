@@ -1,8 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RayTracing.CalculationModel.Calculation;
+using RayTracing.CalculationModel.Common;
 using RayTracing.CalculationModel.Models;
 using RayTracing.Web.Helpers;
 using RayTracing.Web.Models;
+using RayTracing.Web.Models.Mappers;
+using RayTracing.Web.Models.Validators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,6 +15,16 @@ namespace RayTracing.Web.Pages
 {
     public class IndexModel : PageModel
     {
+        private readonly IRayTracingCalculationService _rayTracingCalculationService;
+        private readonly IValidator<AcousticProblemDescription> _validator;
+
+        public IndexModel(
+            IRayTracingCalculationService rayTracingCalculationService,
+            IValidator<AcousticProblemDescription> validator)
+        {
+            _rayTracingCalculationService = rayTracingCalculationService;
+            _validator = validator;
+        }
 
         public IEnumerable<NameIdModel> ArrayTypes { get; private set; }
 
@@ -30,10 +45,6 @@ namespace RayTracing.Web.Pages
         [BindProperty]
         public AcousticProblemDescription AcousticProblem { get; set; } = new AcousticProblemDescription();
 
-        public IndexModel()
-        {
-        }
-
         public IActionResult OnGet()
         {
             ArrayTypes = EnumUtils.GetValues<ArrayType>().Select(x => x.ToNameIdModel());
@@ -50,7 +61,33 @@ namespace RayTracing.Web.Pages
 
         public IActionResult OnPost()
         {
-            return Page();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var validationErrors = _validator.Validate(AcousticProblem, nameof(AcousticProblem));
+            if (validationErrors.Any())
+            {
+                ModelState.AddModelErrors(validationErrors);
+
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var calulationResult = _rayTracingCalculationService.Calculate(AcousticProblem.ToCalculationModelInput());
+
+                return new JsonResult(calulationResult);
+            }
+            catch(CalculationException calculationException)
+            {
+                return BadRequest(new { ErrorMessage = calculationException.Message });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { ErrorMessage = ex.Message });
+            }
         }
     }
 }

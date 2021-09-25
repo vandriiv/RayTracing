@@ -56475,7 +56475,7 @@ function clone(parent, circular, depth, prototype, includeNonEnumerable) {
       var symbols = Object.getOwnPropertySymbols(parent);
       for (var i = 0; i < symbols.length; i++) {
         // Don't need to worry about cloning a symbol because it is a primitive,
-        // like a number or string.
+        // like a number of string.
         var symbol = symbols[i];
         var descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
         if (descriptor && !descriptor.enumerable && !includeNonEnumerable) {
