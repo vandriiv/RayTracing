@@ -24,8 +24,7 @@ namespace RayTracing.Web.Models
         public double[] R { get; set; } = Array.Empty<double>();
 
         [Display(Name = "Range points")]
-        [Required]
-        [NumericArray(ErrorMessage = "Please provide valid numerical values")]
+        [NumericArray(AllowEmpty = true, ErrorMessage = "Please provide valid numerical values")]
         public string RList
         {
             set

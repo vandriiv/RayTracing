@@ -96,7 +96,7 @@ namespace RayTracing.Web.Models.Validators
                 }
             }
 
-            if (model.SoundSpeed.NumberOfPointsInRange <= 0)
+            if (model.SoundSpeed.NumberOfPointsInRange <= 0 && model.SoundSpeed.SoundSpeedDistribution != CalculationModel.Models.SoundSpeedDistribution.Profile)
             {
                 validationErrors.Add(string.Format(nestedFieldTemplate, nameof(model.SoundSpeed), nameof(model.SoundSpeed.NumberOfPointsInRange)), new List<string> { "Number of points in range should be > 0" });
             }
@@ -173,15 +173,14 @@ namespace RayTracing.Web.Models.Validators
                 {
                     if (model.SoundSpeed.R.Length != model.SoundSpeed.NumberOfPointsInRange)
                     {
-                        validationErrors.Add(string.Format(nestedFieldTemplate, nameof(model.SoundSpeed), nameof(model.SoundSpeed.Z)), new List<string> { "Range points count should be equals to provided number of points in depth" });
+                        validationErrors.Add(string.Format(nestedFieldTemplate, nameof(model.SoundSpeed), nameof(model.SoundSpeed.R)), new List<string> { "Range points count should be equals to provided number of points in depth" });
                     }
-
+                    
                     if (model.SoundSpeed.Z.Length != model.SoundSpeed.NumberOfPointsInDepth)
                     {
                         validationErrors.Add(string.Format(nestedFieldTemplate, nameof(model.SoundSpeed), nameof(model.SoundSpeed.Z)), new List<string> { "Depth points count should be equals to provided number of points in depth" });
                     }
-
-                    if (model.SoundSpeed.C2D.GetLength(0) != model.SoundSpeed.NumberOfPointsInDepth ||
+                    else if (model.SoundSpeed.C2D.GetLength(0) != model.SoundSpeed.NumberOfPointsInDepth ||
                         model.SoundSpeed.C2D.GetLength(1) != model.SoundSpeed.NumberOfPointsInRange)
                     {
                         validationErrors.Add(string.Format(nestedFieldTemplate, nameof(model.SoundSpeed), nameof(model.SoundSpeed.Z)), new List<string> { "Sound speed matrix is not valid" });

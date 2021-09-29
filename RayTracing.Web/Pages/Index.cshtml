@@ -1,5 +1,6 @@
 ﻿@page
 @model IndexModel
+@using RayTracing.CalculationModel.Models
 @{
     ViewData["Title"] = "Underwater acoustic calculation";
 }
@@ -31,6 +32,13 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.RayStep"></label>
+                        <input type="number" asp-for="AcousticProblem.RayStep" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.RayStep" class="alert-danger"></span>
+                    </div>
+                </div>
                 <div class="col-12 col-sm-6 col-md-4">
                     <div class="form-group">
                         <label asp-for="AcousticProblem.SourceR"></label>
@@ -66,7 +74,6 @@
                         <span asp-validation-for="AcousticProblem.RangeBoxEnd" class="alert-danger"></span>
                     </div>
                 </div>
-                <div class="d-none d-md-block col-md-4"></div>
                 <div class="col-12 col-sm-6 col-md-4">
                     <div class="form-group">
                         <label asp-for="AcousticProblem.NumberOfThetas"></label>
@@ -219,6 +226,15 @@
                 <div class="col-12">
                     <h6>Sound speed</h6>
                     <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="AcousticProblem.NumberOfSSPPoints"></label>
+                        <input type="number" asp-for="AcousticProblem.NumberOfSSPPoints" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.NumberOfSSPPoints" class="alert-danger"></span>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -485,16 +501,21 @@
             <button type="submit" id="submit_Btn" class="btn btn-light-success mr-2">Submit</button>
         </div>
     </form>
+    <div id="plot-ssp">
+    </div>
+    <div id="plot-rayCoords">
+    </div>
+    <div id="plot-eigenrays">
+    </div>
+    <div id="plot-tl">
+    </div>
     <!--end::Form-->
 </div>
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script src="~/lib/plotly-2.4.2.min.js"></script>
     <script>
-        completed = () => {
-            alert('Posted using Unobtrusive AJAX');
-        };
-
         $(function () {
             $('#AcousticProblem_SoundSpeed_SoundSpeedDistribution').change((e) => {
                 const value = e.target.value;
@@ -534,9 +555,9 @@
             $('#AcousticProblem_SoundSpeed_SoundSpeedDistribution').change();
 
             $('#Calculate_Thetas_Btn').click(() => {
-                const theta0 = $("#AcousticProblem_Theta0").val();
-                const thetaN = $("#AcousticProblem_ThetaN").val();
-                const nOfThetas = $("#AcousticProblem_NumberOfThetas").val();
+                const theta0 = Number($("#AcousticProblem_Theta0").val() || 0);
+                const thetaN = Number($("#AcousticProblem_ThetaN").val() || 0);
+                const nOfThetas = Number($("#AcousticProblem_NumberOfThetas").val() || 0);
 
                 const thetas = [];
                 let dtheta = 0;
@@ -568,14 +589,317 @@
                 $("#AcousticProblem_ThetasList").val(thetas.map(t => Number(t).toFixed(3)).join(' '));
             });
 
+            const buildRayCoordsPlot = (data) => {
+                const {
+                    rays,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ } = data;
+
+                const plotData = rays.map(ray => ({
+                    x: ray.r,
+                    y: ray.z,
+                    type: 'scatter',
+                    line: {
+                        width: 1
+                    }
+                }));
+
+                plotData.push({
+                    x: bottomR,
+                    y: bottomZ,
+                    type: 'scatter',
+                    line: {
+                        color: 'rgb(69, 51, 31)',
+                        width: 6
+                    }
+                });
+
+                plotData.push({
+                    x: [sourceR],
+                    y: [sourceZ],
+                    type: 'markers',
+                    name: 'Source',
+                    marker: {
+                        size: 25,
+                        color: 'rgb(248, 252, 3)',
+                        symbol: ['hexagram']
+                   }
+                });
+
+                const layout = {
+                    title: "Rays",
+                    xaxis: {
+                        range: [rangeStart, rangeEnd]
+                    },
+                    yaxis: {
+                        range: [depthEnd, depthStart]
+                    },
+                    showlegend: false
+                };
+
+                Plotly.newPlot('plot-rayCoords', plotData, layout, { responsive: true });
+            }
+
+            const buildSSPPlot = (data) => {
+                const {
+                    sspc,
+                    sspz,
+                    bottomR,
+                    bottomZ,
+                    sourceZ } = data;
+
+                console.log(sspc);
+                console.log(sspz);
+
+                const plotData = [{
+                    x: sspc,
+                    y: sspz,
+                    type: 'scatter',
+                    mode:'lines'
+                }];
+
+                plotData.push({
+                    x: bottomR,
+                    y: bottomZ,
+                    type: 'scatter',
+                    line: {
+                        color: 'rgb(69, 51, 31)',
+                        width: 6
+                    }
+                });
+
+                const layout = {
+                    title: "Sound speed",
+                    xaxis: {
+                        range: [Math.min(...sspc), Math.max(...sspc)]
+                    },
+                    yaxis: {
+                        range: [Math.max(...sspz), Math.min(...sspz)]
+                    },
+                    showlegend: false
+                };
+
+                Plotly.newPlot('plot-ssp', plotData, layout, { responsive: true });
+            }
+
+            const buildEigenraysPlot = (data) => {
+                const {
+                    eigenrays,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ,
+                    hydrophoneRanges,
+                    hydrophoneDepths} = data;
+
+                const plotData = eigenrays.map(ray => ({
+                    x: ray.r,
+                    y: ray.z,
+                    type: 'scatter',
+                    line: {
+                        width: 1
+                    }
+                }));
+
+                plotData.push({
+                    x: bottomR,
+                    y: bottomZ,
+                    type: 'scatter',
+                    line: {
+                        color: 'rgb(69, 51, 31)',
+                        width: 6
+                    }
+                });
+
+                plotData.push({
+                    x: [sourceR],
+                    y: [sourceZ],
+                    type: 'markers',
+                    name: 'Source',
+                    marker: {
+                        size: 25,
+                        color: 'rgb(248, 252, 3)',
+                        symbol: ['hexagram'],
+                    }
+                });
+
+                plotData.push({
+                    x: hydrophoneRanges,
+                    y: hydrophoneDepths,
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        size: 10,
+                        symbol: ['circle'],
+                    }
+                });
+
+                const layout = {
+                    title: "Eigenrays",
+                    xaxis: {
+                        range: [rangeStart, rangeEnd]
+                    },
+                    yaxis: {
+                        range: [depthEnd, depthStart]
+                    },
+                    showlegend: false
+                };
+
+                Plotly.newPlot('plot-eigenrays', plotData, layout, { responsive: true });
+            }
+
+            const buildTLPlot = (data) => {
+                const {
+                    tL1D,
+                    tL2D,
+                    arrayType,
+                    arrayR,
+                    arrayZ,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ } = data;
+
+                if (arrayType != "@ArrayType.Linear") {
+                    const plotData = [
+                        {
+                            z: tL2D,
+                            x: arrayR,
+                            y: arrayZ,
+                            type: 'heatmap',
+                        }
+                    ];
+
+                    plotData.push({
+                        x: bottomR,
+                        y: bottomZ,
+                        type: 'scatter',
+                        line: {
+                            color: 'rgb(69, 51, 31)',
+                            width: 6
+                        }
+                    })
+
+                    plotData.push({
+                        x: [sourceR],
+                        y: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        xaxis: {
+                            range: [rangeStart, rangeEnd]
+                        },
+                        yaxis: {
+                            range: [depthEnd, depthStart]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-tl', plotData, layout, { responsive: true });
+                }
+                else {
+                    const plotData = [
+                        {
+                            z: arrayZ.map(() => tL1D),
+                            x: arrayZ,
+                            y: arrayR,
+                            type: 'heatmap',
+                            hoverongaps: true
+                        }
+                    ];
+
+                    plotData.push({
+                        y: [sourceR],
+                        x: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+
+                    plotData.push({
+                        x: arrayZ,
+                        y: arrayR,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 10,
+                            symbol: ['circle'],
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        yaxis: {
+                            range: [arrayR[0], arrayR[arrayR.length-1]]
+                        },
+                        xaxis: {
+                            range: [arrayZ[0], arrayZ[arrayZ.length - 1]]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-tl', plotData, layout, { responsive: true });
+                }
+            }
+
             $('#submit_Btn').on('click', function (evt) {
                 evt.preventDefault();
+
+                $("#submit_Btn").prop('disabled', true);
+                $('div[id^="plot"]').empty();
+
                 $.post('', $('form').serialize())
-                    .done(function (data) {
-                        alert("second success");
+                    .done(function (response) {
+                        const { calculationType } = response;
+                        switch (calculationType) {
+                            case "@CalculationType.RayCoords.ToString()":
+                                buildRayCoordsPlot(response);
+                                break;
+                            case "@CalculationType.EigenraysProximity.ToString()":
+                            case "@CalculationType.EigenraysRegFalsi.ToString()":
+                                buildEigenraysPlot(response);
+                                break;
+                            case "@CalculationType.CohTransmissionLoss.ToString()":
+                                buildTLPlot(response);
+                            case "@CalculationType.SoundSpeedProfile.ToString()":
+                                buildSSPPlot(response);
+                            default:
+                                break;
+                        };
+
                     })
                     .fail(function (error) {
-                        alert("error");
+                        console.log(error);
+                    })
+                    .always(function () {
+                        $("#submit_Btn").prop('disabled', false);
                     });
             });
         });

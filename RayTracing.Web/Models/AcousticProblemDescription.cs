@@ -8,6 +8,12 @@ namespace RayTracing.Web.Models
 {
     public class AcousticProblemDescription
     {
+        [Display(Name = "Number of SSP points")]
+        public int NumberOfSSPPoints { get; set; }
+
+        [Display(Name = "Ray step")]
+        public double RayStep { get; set; }
+
         [Display(Name = "Source coordinate (r)")]
         public double SourceR { get; set; }
 
@@ -33,7 +39,7 @@ namespace RayTracing.Web.Models
         public double ThetaN { get; set; }
 
         [Display(Name = "Launching angles")]
-        public double[] Thetas { get; private set; } = Array.Empty<double>();
+        public double[] Thetas { get; set; } = Array.Empty<double>();
 
         [Display(Name = "Launching angles")]
         [Required]

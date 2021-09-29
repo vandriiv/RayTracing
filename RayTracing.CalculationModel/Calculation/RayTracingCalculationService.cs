@@ -65,10 +65,15 @@ namespace RayTracing.CalculationModel.Calculation
                     result = CalcCohAcoustPress(settings);
                     result = CalcParticleVel(settings, result);
                     break;
-
+                case CalculationType.SoundSpeedProfile:
+                    Console.WriteLine("Calculating sound speed profile");
+                    result = CalcSSP(settings);
+                    break;
                 default:
                     throw new CalculationException("Unknown output option.", nameof(settings.Output.CalculationType));
             }
+
+            CalcSSP(settings);
 
             return result;
         }
@@ -145,7 +150,7 @@ namespace RayTracing.CalculationModel.Calculation
                                 {
                                     zHyd = settings.Output.ArrayZ[jj];
                                     dz = Math.Abs(zRay - zHyd);
-
+                                    eigenrays[j, jj] ??= new Eigenrays();
                                     if (dz < settings.Output.Miss)
                                     {
                                         IntLinear1D(rays[i].R, rays[i].Tau, rHyd, ref tauRay, ref junkDouble, iHyd);
@@ -155,27 +160,27 @@ namespace RayTracing.CalculationModel.Calculation
                                         rays[i].Tau[iHyd + 1] = tauRay;
                                         rays[i].Amp[iHyd + 1] = ampRay;
 
-                                        eigenrays[j, jj] = new Eigenrays
+                                        var eigenrayDetails = new EigenrayDetails
                                         {
-                                            Eigenray = new EigenrayDetails
-                                            {
-                                                Theta = settings.Source.Thetas[i],
-                                                R = rays[i].R[..(iHyd + 2)],
-                                                Z = rays[i].Z[..(iHyd + 2)],
-                                                Tau = rays[i].Tau[..(iHyd + 2)],
-                                                Amp = rays[i].Amp[..(iHyd + 2)],
-                                                IReturns = rays[i].IReturn,
-                                                NSurRefl = rays[i].SRefl,
-                                                NBotRefl = rays[i].BRefl,
-                                                NObjRefl = rays[i].ORefl,
-                                                NRefrac = rays[i].NRefrac
-                                            }
+                                            Theta = rays[i].Theta,
+                                            R = rays[i].R[..(iHyd + 2)],
+                                            Z = rays[i].Z[..(iHyd + 2)],
+                                            Tau = rays[i].Tau[..(iHyd + 2)],
+                                            Amp = rays[i].Amp[..(iHyd + 2)],
+                                            IReturns = rays[i].IReturn,
+                                            NSurRefl = rays[i].SRefl,
+                                            NBotRefl = rays[i].BRefl,
+                                            NObjRefl = rays[i].ORefl,
+                                            NRefrac = rays[i].NRefrac
                                         };
+
                                         if (rays[i].NRefrac > 0)
                                         {
-                                            eigenrays[j, jj].Eigenray.RefracR = rays[i].RRefrac;
-                                            eigenrays[j, jj].Eigenray.RefracZ = rays[i].ZRefrac;
+                                            eigenrayDetails.RefracR = rays[i].RRefrac;
+                                            eigenrayDetails.RefracZ = rays[i].ZRefrac;
                                         }
+
+                                        eigenrays[j, jj].Eigenray.Add(eigenrayDetails);
 
                                         eigenrays[j, jj].NEigenrays += 1;
                                         maxNumEigenrays = Math.Max(eigenrays[j, jj].NEigenrays, maxNumEigenrays);
@@ -192,7 +197,7 @@ namespace RayTracing.CalculationModel.Calculation
                                     {
                                         zHyd = settings.Output.ArrayZ[jj];
                                         dz = Math.Abs(zRay - zHyd);
-
+                                        eigenrays[j, jj] ??= new Eigenrays();
                                         if (dz < settings.Output.Miss)
                                         {
                                             IntLinear1D(rays[i].R, rays[i].Tau, rHyd, ref tauRay, ref junkDouble, iRet[l]);
@@ -202,29 +207,29 @@ namespace RayTracing.CalculationModel.Calculation
                                             rays[i].Tau[iRet[l] + 1] = tauRay;
                                             rays[i].Amp[iRet[l] + 1] = ampRay;
 
-                                            eigenrays[j, jj] = new Eigenrays
+                                            var eigenrayDetails = new EigenrayDetails
                                             {
-                                                Eigenray = new EigenrayDetails
-                                                {
-                                                    Theta = settings.Source.Thetas[i],
-                                                    R = rays[i].R[..(iRet[l] + 1)],
-                                                    Z = rays[i].Z[..(iRet[l] + 1)],
-                                                    Tau = rays[i].Tau[..(iRet[l] + 1)],
-                                                    Amp = rays[i].Amp[..(iRet[l] + 1)],
-                                                    IReturns = rays[i].IReturn,
-                                                    NSurRefl = rays[i].SRefl,
-                                                    NBotRefl = rays[i].BRefl,
-                                                    NObjRefl = rays[i].ORefl,
-                                                    NRefrac = rays[i].NRefrac
-                                                }
+                                                Theta = rays[i].Theta,
+                                                R = rays[i].R[..(iRet[l] + 1)],
+                                                Z = rays[i].Z[..(iRet[l] + 1)],
+                                                Tau = rays[i].Tau[..(iRet[l] + 1)],
+                                                Amp = rays[i].Amp[..(iRet[l] + 1)],
+                                                IReturns = rays[i].IReturn,
+                                                NSurRefl = rays[i].SRefl,
+                                                NBotRefl = rays[i].BRefl,
+                                                NObjRefl = rays[i].ORefl,
+                                                NRefrac = rays[i].NRefrac
                                             };
+
                                             if (rays[i].NRefrac > 0)
                                             {
-                                                eigenrays[j, jj].Eigenray.RefracR = rays[i].RRefrac;
-                                                eigenrays[j, jj].Eigenray.RefracZ = rays[i].ZRefrac;
+                                                eigenrayDetails.RefracR = rays[i].RRefrac;
+                                                eigenrayDetails.RefracZ = rays[i].ZRefrac;
                                             }
 
                                             eigenrays[j, jj].NEigenrays += 1;
+                                            eigenrays[j, jj].Eigenray.Add(eigenrayDetails);
+
                                             maxNumEigenrays = Math.Max(eigenrays[j, jj].NEigenrays, maxNumEigenrays);
                                         }
                                     }
@@ -364,6 +369,8 @@ namespace RayTracing.CalculationModel.Calculation
                             throw new CalculationException("Unexpected error. Number of possible eigenrays exceeds number of calculated rays");
                         }
                     }
+
+                    eigenrays[i, j] = new Eigenrays();
                     int nFoundEigenRays = 0;
                     for (l = 0; l < nPossibleEigenRays; l++)
                     {
@@ -430,7 +437,7 @@ namespace RayTracing.CalculationModel.Calculation
                                         fl = f0;
                                     }
                                 }
-                            }//while()
+                            }
                         }
                         if (success == true)
                         {
@@ -438,28 +445,29 @@ namespace RayTracing.CalculationModel.Calculation
                             SolveEikonalEq(settings, tempRay);
                             SolveDynamicEq(settings, tempRay);
 
-                            eigenrays[i, j] = new Eigenrays
+                            var eigenrayDetails = new EigenrayDetails
                             {
-                                Eigenray = new EigenrayDetails
-                                {
-                                    Theta = settings.Source.Thetas[i],
-                                    R = tempRay.R,
-                                    Z = tempRay.Z,
-                                    Tau = tempRay.Tau,
-                                    Amp = tempRay.Amp,
-                                    IReturns = tempRay.IReturn,
-                                    NSurRefl = tempRay.SRefl,
-                                    NBotRefl = tempRay.BRefl,
-                                    NObjRefl = tempRay.ORefl,
-                                    NRefrac = tempRay.NRefrac
-                                }
+                                Theta = tempRay.Theta,
+                                R = tempRay.R,
+                                Z = tempRay.Z,
+                                Tau = tempRay.Tau,
+                                Amp = tempRay.Amp,
+                                IReturns = tempRay.IReturn,
+                                NSurRefl = tempRay.SRefl,
+                                NBotRefl = tempRay.BRefl,
+                                NObjRefl = tempRay.ORefl,
+                                NRefrac = tempRay.NRefrac
                             };
+
                             if (tempRay.NRefrac > 0)
                             {
-                                eigenrays[i, j].Eigenray.RefracR = tempRay.RRefrac;
-                                eigenrays[i, j].Eigenray.RefracZ = tempRay.ZRefrac;
+                                eigenrayDetails.RefracR = tempRay.RRefrac;
+                                eigenrayDetails.RefracZ = tempRay.ZRefrac;
                             }
-                            eigenrays[i,j].NEigenrays += 1;
+
+                            eigenrays[i, j].NEigenrays += 1;
+                            eigenrays[i, j].Eigenray.Add(eigenrayDetails);
+
                             maxNumEigenrays = Math.Max(eigenrays[i, j].NEigenrays, maxNumEigenrays);
                         }
                     }
@@ -2063,12 +2071,13 @@ namespace RayTracing.CalculationModel.Calculation
                 case ArrayType.Rectangular:
                 case ArrayType.Horizontal:
                 case ArrayType.Vertical:
-                    var tl2D = new double[settings.Output.NArrayR, settings.Output.NArrayZ];
+                    var tl2D = new double?[settings.Output.NArrayR, settings.Output.NArrayZ];
                     for (var i = 0; i < settings.Output.NArrayR; i++)
                     {
                         for (var j = 0; j < settings.Output.NArrayZ; j++)
                         {
-                            tl2D[i, j] = -20.0 * Math.Log10(Complex.Abs(settings.Output.Pressure2D[i, j]));
+                            var temp = -20.0 * Math.Log10(Complex.Abs(settings.Output.Pressure2D[i, j]));
+                            tl2D[i, j] = double.IsFinite(temp) ? temp : (double?)null;
                         }
                     }
                     _result.TL2D = tl2D.Transpose();
@@ -2347,6 +2356,13 @@ namespace RayTracing.CalculationModel.Calculation
             Ray[] rays = new Ray[settings.Source.NThetas];
 
             Arrivals[,] arrivals = new Arrivals[settings.Output.NArrayR, settings.Output.NArrayZ];
+            for (var i = 0; i < settings.Output.NArrayR; i++)
+            {
+                for (var j = 0; j < settings.Output.NArrayZ; j++)
+                {
+                    arrivals[i, j] = new Arrivals();
+                }
+            }
 
             var _result = new CalculationResult
             {
@@ -2382,27 +2398,23 @@ namespace RayTracing.CalculationModel.Calculation
                                 {
                                     zHyd = settings.Output.ArrayZ[jj];
                                     dz = Math.Abs(zRay - zHyd);
-
                                     if (dz < settings.Output.Miss)
                                     {
                                         IntLinear1D(rays[i].R, rays[i].Tau, rHyd, ref tauRay, ref junkDouble, iHyd);
                                         IntComplexLinear1D(rays[i].R, rays[i].Amp, rHyd, ref ampRay, ref junkComplex, iHyd);
 
-                                        arrivals[j, jj] = new Arrivals
+                                        arrivals[j, jj].Arrival.Add(new ArrivalDetails
                                         {
-                                            Arrival = new ArrivalDetails
-                                            {
-                                                Theta = settings.Source.Thetas[i],
-                                                R = new double[] { rHyd },
-                                                Z = new double[] { zRay },
-                                                Tau = new double[] { tauRay },
-                                                Amp = new Complex[] { ampRay },
-                                                IReturns = rays[i].IReturn,
-                                                NSurRefl = rays[i].SRefl,
-                                                NBotRefl = rays[i].BRefl,
-                                                NObjRefl = rays[i].ORefl
-                                            }
-                                        };
+                                            Theta = settings.Source.Thetas[i],
+                                            R = rHyd,
+                                            Z = zRay,
+                                            Tau = tauRay,
+                                            Amp = ampRay,
+                                            IReturns = rays[i].IReturn,
+                                            NSurRefl = rays[i].SRefl,
+                                            NBotRefl = rays[i].BRefl,
+                                            NObjRefl = rays[i].ORefl
+                                        });
                                         arrivals[j,jj].NArrivals += 1;
                                         maxNumArrivals = Math.Max(arrivals[j,jj].NArrivals, maxNumArrivals);
                                     }
@@ -2420,26 +2432,24 @@ namespace RayTracing.CalculationModel.Calculation
                                         zHyd = settings.Output.ArrayZ[jj];
                                         dz = Math.Abs(zRay - zHyd);
 
+                                        arrivals[j, jj] = new Arrivals();
                                         if (dz < settings.Output.Miss)
                                         {
                                             IntLinear1D(rays[i].R, rays[i].Tau, rHyd, ref tauRay, ref junkDouble, iRet[l]);
                                             IntComplexLinear1D(rays[i].R, rays[i].Amp, (Complex)rHyd, ref ampRay, ref junkComplex, iRet[l]);
 
-                                            arrivals[j, jj] = new Arrivals
+                                            arrivals[j, jj].Arrival.Add(new ArrivalDetails
                                             {
-                                                Arrival = new ArrivalDetails
-                                                {
-                                                    Theta = settings.Source.Thetas[i],
-                                                    R = new double[] { rHyd },
-                                                    Z = new double[] { zRay },
-                                                    Tau = new double[] { tauRay },
-                                                    Amp = new Complex[] { ampRay },
-                                                    IReturns = rays[i].IReturn,
-                                                    NSurRefl = rays[i].SRefl,
-                                                    NBotRefl = rays[i].BRefl,
-                                                    NObjRefl = rays[i].ORefl
-                                                }
-                                            };
+                                                Theta = settings.Source.Thetas[i],
+                                                R = rHyd,
+                                                Z = zRay,
+                                                Tau = tauRay,
+                                                Amp = ampRay,
+                                                IReturns = rays[i].IReturn,
+                                                NSurRefl = rays[i].SRefl,
+                                                NBotRefl = rays[i].BRefl,
+                                                NObjRefl = rays[i].ORefl
+                                            });
 
                                             arrivals[j,jj].NArrivals += 1;
                                             maxNumArrivals = Math.Max(arrivals[j,jj].NArrivals, maxNumArrivals);
@@ -2469,13 +2479,8 @@ namespace RayTracing.CalculationModel.Calculation
             int nTrial;
             double theta0 = 0, f0;
             double fl, fr, prod;
-            double[] thetaL = new double[5];
-            double[] thetaR = new double[5];
             var tempRay = new Ray();
-            double[] thetas = new double[5];
-            double[,] depths = new double[2,1];
             Ray[] rays = new Ray[settings.Source.NThetas];
-            double[] dz = new double[2];
 
             Arrivals[,] arrivals = new Arrivals[settings.Output.NArrayR, settings.Output.NArrayZ];
 
@@ -2488,6 +2493,9 @@ namespace RayTracing.CalculationModel.Calculation
             };
 
             nRays = 0;
+
+            var thetas = new double[settings.Source.NThetas];
+            var depths = new double[settings.Source.NThetas, settings.Output.NArrayR];
 
             for (var i = 0; i < settings.Source.NThetas; i++)
             {
@@ -2523,6 +2531,10 @@ namespace RayTracing.CalculationModel.Calculation
                     nRays++;
                 }
             }
+
+            var thetaL = new double[nRays];
+            var thetaR = new double[nRays];
+            var dz = new double[nRays];
 
             for (var i = 0; i < settings.Output.NArrayR; i++)
             {
@@ -2573,6 +2585,7 @@ namespace RayTracing.CalculationModel.Calculation
                         }
                     }
 
+                    arrivals[i, j] = new Arrivals();
                     int nFoundArrivals = 0;
                     for (var l = 0; l < nPossibleArrivals; l++)
                     {
@@ -2647,21 +2660,18 @@ namespace RayTracing.CalculationModel.Calculation
                             SolveEikonalEq(settings, tempRay);
                             SolveDynamicEq(settings, tempRay);
 
-                            arrivals[i, j] = new Arrivals
+                            arrivals[i, j].Arrival.Add(new ArrivalDetails
                             {
-                                Arrival = new ArrivalDetails
-                                {
-                                    Theta = settings.Source.Thetas[i],
-                                    R = new double[] { tempRay.R[tempRay.NCoords - 1] },
-                                    Z = new double[] { tempRay.Z[tempRay.NCoords - 1] },
-                                    Tau = new double[] { tempRay.Tau[tempRay.NCoords - 1] },
-                                    Amp = new Complex[] { tempRay.Amp[tempRay.NCoords - 1] },
-                                    IReturns = tempRay.IReturn,
-                                    NSurRefl = tempRay.SRefl,
-                                    NBotRefl = tempRay.BRefl,
-                                    NObjRefl = tempRay.ORefl
-                                }
-                            };
+                                Theta = settings.Source.Thetas[i],
+                                R = tempRay.R[tempRay.NCoords - 1],
+                                Z = tempRay.Z[tempRay.NCoords - 1],
+                                Tau = tempRay.Tau[tempRay.NCoords - 1],
+                                Amp = tempRay.Amp[tempRay.NCoords - 2],
+                                IReturns = tempRay.IReturn,
+                                NSurRefl = tempRay.SRefl,
+                                NBotRefl = tempRay.BRefl,
+                                NObjRefl = tempRay.ORefl
+                            });
 
                             arrivals[i,j].NArrivals += 1;
                             maxNumArrivals = Math.Max(arrivals[i,j].NArrivals, maxNumArrivals);

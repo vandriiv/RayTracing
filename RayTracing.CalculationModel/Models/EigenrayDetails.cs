@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace RayTracing.CalculationModel.Models
 {
@@ -6,13 +7,13 @@ namespace RayTracing.CalculationModel.Models
     {
         public double Theta { get; set; }
 
-        public double[] R { get; set; }
+        public double[] R { get; set; } = Array.Empty<double>();
 
-        public double[] Z { get; set; }
+        public double[] Z { get; set; } = Array.Empty<double>();
 
-        public double[] Tau { get; set; }
+        public double[] Tau { get; set; } = Array.Empty<double>();
 
-        public Complex[] Amp { get; set; }
+        public Complex[] Amp { get; set; } = Array.Empty<Complex>();
 
         public bool IReturns { get; set; }
 
@@ -24,8 +25,8 @@ namespace RayTracing.CalculationModel.Models
 
         public int NRefrac { get; set; }
 
-        public double[] RefracR { get; set; }
+        public double[] RefracR { get; set; } = Array.Empty<double>();
 
-        public double[] RefracZ { get; set; }
+        public double[] RefracZ { get; set; } = Array.Empty<double>();
     }
 }

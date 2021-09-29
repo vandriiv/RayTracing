@@ -6,13 +6,13 @@ namespace RayTracing.CalculationModel.Models
     {
         public double Theta { get; set; }
 
-        public double[] R { get; set; }
+        public double R { get; set; }
 
-        public double[] Z { get; set; }
+        public double Z { get; set; }
 
-        public double[] Tau { get; set; }
+        public double Tau { get; set; }
 
-        public Complex[] Amp { get; set; }
+        public Complex Amp { get; set; }
 
         public bool IReturns { get; set; }
 

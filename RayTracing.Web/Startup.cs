@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RayTracing.CalculationModel.Calculation;
 using RayTracing.Web.Models;
+using RayTracing.Web.Models.Problems;
 using RayTracing.Web.Models.Validators;
 
 namespace RayTracing.Web
@@ -21,9 +22,10 @@ namespace RayTracing.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.AddRazorPages().AddNewtonsoftJson();
             services.AddTransient<IRayTracingCalculationService, RayTracingCalculationService>();
             services.AddTransient<IValidator<AcousticProblemDescription>, AcousticProblemDescriptionValidator>();
+            services.AddSingleton<CommonProblems>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
