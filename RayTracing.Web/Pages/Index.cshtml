@@ -596,6 +596,8 @@
                     depthEnd,
                     rangeStart,
                     rangeEnd,
+                    surfaceR,
+                    surfaceZ,
                     bottomR,
                     bottomZ,
                     sourceR,
@@ -611,12 +613,22 @@
                 }));
 
                 plotData.push({
+                    x: surfaceR,
+                    y: surfaceZ,
+                    type: 'scatter',
+                    line: {
+                        color: 'rgb(9, 195, 219)',
+                        width: 2
+                    }
+                });
+
+                plotData.push({
                     x: bottomR,
                     y: bottomZ,
                     type: 'scatter',
                     line: {
                         color: 'rgb(69, 51, 31)',
-                        width: 6
+                        width: 3
                     }
                 });
 
@@ -653,9 +665,6 @@
                     bottomR,
                     bottomZ} = data;
 
-                console.log(sspc);
-                console.log(sspz);
-
                 const plotData = [{
                     x: sspc,
                     y: sspz,
@@ -669,7 +678,7 @@
                     type: 'scatter',
                     line: {
                         color: 'rgb(69, 51, 31)',
-                        width: 6
+                        width: 3
                     }
                 });
 
@@ -696,6 +705,8 @@
                     rangeEnd,
                     bottomR,
                     bottomZ,
+                    surfaceR,
+                    surfaceZ,
                     sourceR,
                     sourceZ,
                     hydrophoneRanges,
@@ -716,7 +727,17 @@
                     type: 'scatter',
                     line: {
                         color: 'rgb(69, 51, 31)',
-                        width: 6
+                        width: 3
+                    }
+                });
+
+                plotData.push({
+                    x: surfaceR,
+                    y: surfaceZ,
+                    type: 'scatter',
+                    line: {
+                        color: 'rgb(9, 195, 219)',
+                        width: 2
                     }
                 });
 
@@ -789,7 +810,7 @@
                         type: 'scatter',
                         line: {
                             color: 'rgb(69, 51, 31)',
-                            width: 6
+                            width: 3
                         }
                     })
 
@@ -840,7 +861,6 @@
                             symbol: ['hexagram']
                         }
                     });
-
 
                     plotData.push({
                         x: arrayZ,
