@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTracing.Web", "RayTracing.Web\RayTracing.Web.csproj", "{7616131C-DDED-402F-B94D-DCBB63375754}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RayTracing.Web", "RayTracing.Web\RayTracing.Web.csproj", "{7616131C-DDED-402F-B94D-DCBB63375754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RayTracing.CalculationModel", "RayTracing.CalculationModel\RayTracing.CalculationModel.csproj", "{FBB9C6C6-641D-417E-89CD-810AA6DE04C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RayTracing.CalculationModel", "RayTracing.CalculationModel\RayTracing.CalculationModel.csproj", "{FBB9C6C6-641D-417E-89CD-810AA6DE04C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

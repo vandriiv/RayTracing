@@ -651,8 +651,7 @@
                     sspc,
                     sspz,
                     bottomR,
-                    bottomZ,
-                    sourceZ } = data;
+                    bottomZ} = data;
 
                 console.log(sspc);
                 console.log(sspz);
@@ -875,7 +874,8 @@
                 $("#submit_Btn").prop('disabled', true);
                 $('div[id^="plot"]').empty();
 
-                $.post('', $('form').serialize())
+                if ($('form').valid()) {
+                    $.post('', $('form').serialize())
                     .done(function (response) {
                         const { calculationType } = response;
                         switch (calculationType) {
@@ -901,6 +901,7 @@
                     .always(function () {
                         $("#submit_Btn").prop('disabled', false);
                     });
+                }
             });
         });
     </script>

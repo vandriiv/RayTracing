@@ -1,0 +1,356 @@
+﻿@page "/helpers"
+@model RayTracing.Web.Pages.HelpersModel
+@{
+    ViewData["Title"] = "Helpers";
+}
+<div class="card card-custom gutter-b example example-compact">
+    <div class="card-header">
+        <h3 class="card-title">Common useful tools</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="card card-custom gutter-b">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">
+                                <i class="flaticon-arrows text-info"></i>
+                            </span>
+                            <h3 class="card-label">
+                                Linear spaced vector
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="form-group">
+                                    <label>From</label>
+                                    <input type="number" name="lsFrom" id="lsFrom" value="0" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="form-group">
+                                    <label>To</label>
+                                    <input type="number" name="lsTo" id="lsTo" value="100" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Count</label>
+                                    <input type="number" name="lsCount" id="lsCount" value="10" class="form-control" min="1" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <label>Round to decimals points</label>
+                                    <input type="number" name="lsRound" id="lsRound" value="2" min="0" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="display:none" id="lsResultWrapper">
+                            <div class="col-12 form-group">
+                                <label>Result</label>
+                                <textarea rows="3" name="lsResult" id="lsResult" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-outline-info" id="lsCalculate">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card card-custom gutter-b">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">
+                                <i class="flaticon-refresh text-info"></i>
+                            </span>
+                            <h3 class="card-label">
+                                Degrees convertion
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Rad/Degree value</label>
+                                    <input type="number" name="dcInput" id="dcInput" value="30" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="form-group">
+                                    <label>Result</label>
+                                    <input type="number" name="dcResult" id="dcResult" readonly class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-outline-success mr-2" id="dcRadToDegree">Radians to degrees</button>
+                                <button type="button" class="btn btn-outline-warning mr-2" id="dcDegreeToRad">Degrees to radians</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card card-custom gutter-b">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">
+                                <i class="flaticon-edit text-info"></i>
+                            </span>
+                            <h3 class="card-label">
+                                Environment drawer
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 col-md-4">
+                                            <div class="form-group">
+                                                <label>Depth (m)</label>
+                                                <input type="number" name="depth" id="depth" value="250" class="form-control" min="1" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4">
+                                            <div class="form-group">
+                                                <label>Range (m)</label>
+                                                <input type="number" name="range" id="range" value="3000" class="form-control" min="1" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4">
+                                            <div class="form-group">
+                                                <label>Number of points</label>
+                                                <input type="number" name="bottomNOfPoints" id="bottomNOfPoints" step="1" value="5" class="form-control" min="1" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6" style="display:none;" id="bottomCoordsWrapper">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Bottom coordinates (R)</label>
+                                                <textarea name="bottomCoordsR" id="bottomCoordsR" rows="5" class="form-control" readonly></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Bottom coordinates (Z)</label>
+                                                <textarea name="bottomCoordsZ" id="bottomCoordsZ" rows="5" class="form-control" readonly></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-outline-info" id="drawEnvironmentBtn">Draw environment</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <canvas id="canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="/lib/chart.min.js"></script>
+    <script>
+        const linearSpace = (from, to, amount) => {
+            const spacing = (to - from) / (amount - 1);
+
+            const result = [];
+            result.push(from);
+
+            for (let i = 1; i < amount - 1; i++) {
+                result.push(result[i - 1] + spacing);
+            }
+
+            result.push(to);
+
+            return result;
+        }
+
+        const radianToDegree = (r) => {
+            return r * 180 / Math.PI;
+        }
+
+        const degreeToRadian = (d) => {
+            return d / 180 * Math.PI;
+        }
+
+        $(() => {
+            $("#dcRadToDegree").click(() => {
+                const value = Number($("#dcInput").val());
+
+                $("#dcResult").val(radianToDegree(value));
+            });
+
+            $("#dcDegreeToRad").click(() => {
+                const value = Number($("#dcInput").val());
+
+                $("#dcResult").val(degreeToRadian(value));
+            });
+
+            $("#lsCalculate").click(() => {
+                const from = Number($("#lsFrom").val());
+                const to = Number($("#lsTo").val());
+                const count = Number($("#lsCount").val());
+                const roundTo = Number($("#lsRound").val());
+
+                $("#lsResultWrapper").show();
+
+                const vector = linearSpace(from, to, count);
+
+                $("#lsResult").val(vector.map(x => x.toFixed(roundTo).replace(/\.00$/, '')).join(' '));
+            });
+
+            $("#drawEnvironmentBtn").click(() => {
+                const depth = Number($("#depth").val());
+                const range = Number($("#range").val());
+                const nOfBottom = Number($("#bottomNOfPoints").val());
+
+                const rangeVector = linearSpace(0, range, nOfBottom);
+
+                environmentDrawer(rangeVector, depth);
+                $("#bottomCoordsR").val(rangeVector.map(x => x.toFixed(2).replace(/\.00$/, '')).join(' '));
+                $("#bottomCoordsWrapper").show();
+            });
+        });
+
+        function environmentDrawer(rangePoints, maxDepth) {
+            const displayBottomCoords = (data) => {
+                $("#bottomCoordsZ").val(data.map(x => x.toFixed(2).replace(/\.00$/, '')).join(' '));
+            };
+
+            let range = rangePoints.sort((a, b) => a - b);
+            let bottom = rangePoints.map(_ => maxDepth);
+
+            displayBottomCoords(bottom);
+
+            // globals
+            let activePoint = null;
+            let canvas = null;
+
+            // Draw a line chart with two data sets
+            let ctx = document.getElementById("canvas").getContext("2d");
+            canvas = document.getElementById("canvas");
+            window.myChart = Chart.Line(ctx, {
+                data: {
+                    labels: range,
+                    datasets: [
+                        {
+                            data: bottom,
+                            label: "Depth",
+                            borderColor: "#786c4c",
+                            fill: true,
+                            backgroundColor: "rgba(9, 195, 219, 0.2)"
+                        }
+                    ]
+                },
+                options: {
+                    animation: {
+                        duration: 0
+                    },
+                    tooltips: {
+                        mode: 'nearest'
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function (value) {
+                                    return value.toFixed(2).replace(/\.00$/, '');
+                                }
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            ticks: {
+                                beginAtZero: true,
+                                steps: 10,
+                                max: maxDepth,
+                                reverse: true,
+                                callback: function (value) {
+                                    return value.toFixed(2).replace(/\.00$/, '');
+                                }
+                            }
+                        }]
+                    },
+                },
+            });
+
+            // set pointer event handlers for canvas element
+            canvas.onpointerdown = downHandler;
+            canvas.onpointerup = upHandler;
+            canvas.onpointermove = null;
+
+            function downHandler(event) {
+                // check for data point near event location
+                const points = window.myChart.getElementAtEvent(event, { intersect: false });
+                if (points.length > 0) {
+                    // grab nearest point, start dragging
+                    activePoint = points[0];
+                    canvas.onpointermove = moveHandler;
+                };
+            };
+
+            function upHandler(event) {
+                // release grabbed point, stop dragging
+                activePoint = null;
+                canvas.onpointermove = null;
+            };
+
+            function moveHandler(event) {
+                // locate grabbed point in chart data
+                if (activePoint != null) {
+                    let data = activePoint._chart.data;
+                    let datasetIndex = activePoint._datasetIndex;
+
+                    // read mouse position
+                    const helpers = Chart.helpers;
+                    let position = helpers.getRelativePosition(event, myChart);
+
+                    // convert mouse position to chart y axis value
+                    let chartArea = window.myChart.chartArea;
+                    let yAxis = window.myChart.scales["y-axis-0"];
+                    let yValue = maxDepth - map(position.y, chartArea.bottom, chartArea.top, yAxis.min, yAxis.max);
+
+                    if (yValue < 0 || yValue > maxDepth) {
+                        return;
+                    }
+
+                    // update y value of active data point
+                    data.datasets[datasetIndex].data[activePoint._index] = yValue;
+                    window.myChart.update();
+                    displayBottomCoords(data.datasets[datasetIndex].data);
+                };
+            };
+
+            // map value to other coordinate system
+            function map(value, start1, stop1, start2, stop2) {
+                return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1))
+            };
+        }
+    </script>
+}
