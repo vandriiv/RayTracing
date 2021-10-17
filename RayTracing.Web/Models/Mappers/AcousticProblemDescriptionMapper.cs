@@ -59,7 +59,7 @@ namespace RayTracing.Web.Models.Mappers
             settings.Output.CalculationType = problemDescription.CalculationType;
             settings.Output.ArrayType = problemDescription.HydrophoneArrayType;
             settings.Output.NArrayR = problemDescription.NumberOfHydrophonesAlongRange;
-            settings.Output.NArrayZ = problemDescription.NumberOfHydrophonesAlogDepth;
+            settings.Output.NArrayZ = problemDescription.NumberOfHydrophonesAlongDepth;
             settings.Output.ArrayR = problemDescription.HydrophoneRanges;
             settings.Output.ArrayZ = problemDescription.HydrophoneDepths;
             settings.Output.Miss = problemDescription.Threshold;

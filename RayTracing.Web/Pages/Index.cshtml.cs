@@ -123,7 +123,7 @@ namespace RayTracing.Web.Pages
                 },
                 var x when (x == CalculationType.EigenraysProximity || x == CalculationType.EigenraysRegFalsi) => new
                 {
-                    Eigenrays = MapEigenreysResultToResponseObject(calculationResult.Eigenrays),
+                    Eigenrays = MapEigenreysResultToResponseObject(calculationResult.Eigenrays, calculationResult.HydrophoneR, calculationResult.HydrophoneZ),
                     HydrophoneRanges = acousticProblem.HydrophoneRanges,
                     HydrophoneDepths = acousticProblem.HydrophoneDepths,
                     RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
@@ -141,8 +141,7 @@ namespace RayTracing.Web.Pages
                 CalculationType.CohTransmissionLoss => new
                 {
                     ArrayType = acousticProblem.HydrophoneArrayType.ToString(),
-                    TL1D = calculationResult.TL,
-                    TL2D = calculationResult.TL2D,
+                    TL = calculationResult.TL,
                     ArrayR = calculationResult.HydrophoneR,
                     ArrayZ = calculationResult.HydrophoneZ,
                     RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
@@ -159,9 +158,9 @@ namespace RayTracing.Web.Pages
                 },
                 var x when (x == CalculationType.AmpDelayRegFalsi || x == CalculationType.AmpDelayProximity) => new
                 {
-                    Arrivals = MapArrivalsResultToResponseObject(calculationResult.Arrivals),
-                    ArrayR = calculationResult.HydrophoneR,
-                    ArrayZ = calculationResult.HydrophoneZ,
+                    Arrivals = MapArrivalsResultToResponseObject(calculationResult.Arrivals, calculationResult.HydrophoneR, calculationResult.HydrophoneZ),
+                    HydrophoneRanges = calculationResult.HydrophoneR,
+                    HydrophoneDepths = calculationResult.HydrophoneZ,
                     RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
                     RangeEnd = Math.Max(acousticProblem.Altimetry.R.Max(), acousticProblem.Batimetry.R.Max()),
                     DepthStart = Math.Min(acousticProblem.Altimetry.Z.Min(), acousticProblem.Batimetry.Z.Min()),
@@ -190,52 +189,148 @@ namespace RayTracing.Web.Pages
                     SourceR = acousticProblem.SourceR,
                     SourceZ = acousticProblem.SourceZ
                 },
-               _ => new { }
+                CalculationType.CohAcousticPressure => new
+                {
+                    ArrayType = acousticProblem.HydrophoneArrayType.ToString(),
+                    Pressure = calculationResult.Pressure2D,
+                    PressureTL = MapToTLRepresentation(calculationResult.Pressure2D),
+                    ArrayR = calculationResult.HydrophoneR,
+                    ArrayZ = calculationResult.HydrophoneZ,
+                    RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
+                    RangeEnd = Math.Max(acousticProblem.Altimetry.R.Max(), acousticProblem.Batimetry.R.Max()),
+                    DepthStart = Math.Min(acousticProblem.Altimetry.Z.Min(), acousticProblem.Batimetry.Z.Min()),
+                    DepthEnd = Math.Max(acousticProblem.Altimetry.Z.Max(), acousticProblem.Batimetry.Z.Max()),
+                    CalculationType = acousticProblem.CalculationType.ToString(),
+                    SurfaceR = acousticProblem.Altimetry.R,
+                    SurfaceZ = acousticProblem.Altimetry.Z,
+                    BottomR = acousticProblem.Batimetry.R,
+                    BottomZ = acousticProblem.Batimetry.Z,
+                    SourceR = acousticProblem.SourceR,
+                    SourceZ = acousticProblem.SourceZ
+                },
+                CalculationType.PartVelocity => new
+                {
+                    ArrayType = acousticProblem.HydrophoneArrayType.ToString(),
+                    U = calculationResult.U,
+                    UTL = MapToTLRepresentation(calculationResult.U),
+                    W = calculationResult.W,
+                    WTL = MapToTLRepresentation(calculationResult.W),
+                    ArrayR = calculationResult.HydrophoneR,
+                    ArrayZ = calculationResult.HydrophoneZ,
+                    RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
+                    RangeEnd = Math.Max(acousticProblem.Altimetry.R.Max(), acousticProblem.Batimetry.R.Max()),
+                    DepthStart = Math.Min(acousticProblem.Altimetry.Z.Min(), acousticProblem.Batimetry.Z.Min()),
+                    DepthEnd = Math.Max(acousticProblem.Altimetry.Z.Max(), acousticProblem.Batimetry.Z.Max()),
+                    CalculationType = acousticProblem.CalculationType.ToString(),
+                    SurfaceR = acousticProblem.Altimetry.R,
+                    SurfaceZ = acousticProblem.Altimetry.Z,
+                    BottomR = acousticProblem.Batimetry.R,
+                    BottomZ = acousticProblem.Batimetry.Z,
+                    SourceR = acousticProblem.SourceR,
+                    SourceZ = acousticProblem.SourceZ
+                },
+                CalculationType.CohAccousicPressurePartVelocity => new
+                {
+                    ArrayType = acousticProblem.HydrophoneArrayType.ToString(),
+                    Pressure = calculationResult.Pressure2D,
+                    PressureTL = MapToTLRepresentation(calculationResult.Pressure2D),
+                    U = calculationResult.U,
+                    UTL = MapToTLRepresentation(calculationResult.U),
+                    W = calculationResult.W,
+                    WTL = MapToTLRepresentation(calculationResult.W),
+                    ArrayR = calculationResult.HydrophoneR,
+                    ArrayZ = calculationResult.HydrophoneZ,
+                    RangeStart = Math.Min(acousticProblem.Altimetry.R.Min(), acousticProblem.Batimetry.R.Min()),
+                    RangeEnd = Math.Max(acousticProblem.Altimetry.R.Max(), acousticProblem.Batimetry.R.Max()),
+                    DepthStart = Math.Min(acousticProblem.Altimetry.Z.Min(), acousticProblem.Batimetry.Z.Min()),
+                    DepthEnd = Math.Max(acousticProblem.Altimetry.Z.Max(), acousticProblem.Batimetry.Z.Max()),
+                    CalculationType = acousticProblem.CalculationType.ToString(),
+                    SurfaceR = acousticProblem.Altimetry.R,
+                    SurfaceZ = acousticProblem.Altimetry.Z,
+                    BottomR = acousticProblem.Batimetry.R,
+                    BottomZ = acousticProblem.Batimetry.Z,
+                    SourceR = acousticProblem.SourceR,
+                    SourceZ = acousticProblem.SourceZ
+                },
+                _ => new { }
             };
         }
 
-        private List<object> MapEigenreysResultToResponseObject(Eigenrays[,] eigenrays)
+        private object[,] MapEigenreysResultToResponseObject(Eigenrays[,] eigenrays, double[] hydrophoneR, double[] hydrophoneZ)
         {
             var rowsCount = eigenrays.GetLength(0);
             var colsCount = eigenrays.GetLength(1);
-            var result = new List<object>(rowsCount * colsCount * 5);
 
-            for(var i = 0; i < rowsCount; i++)
+            var result = new object[rowsCount, colsCount];
+
+            for (var i = 0; i < rowsCount; i++)
             {
                 for (var j = 0; j < colsCount; j++)
                 {
+                    var eigenraysTmp = new List<object>(eigenrays[i, j].Eigenray.Count);
                     for (var k = 0; k < eigenrays[i, j].Eigenray.Count; k++)
                     {
-                        result.Add(new
+                        eigenraysTmp.Add(new
                         {
                             eigenrays[i, j].Eigenray[k].R,
                             eigenrays[i, j].Eigenray[k].Z
                         });
                     }
+
+
+                    result[i, j] = new
+                    {
+                        Rays = eigenraysTmp
+                    };
+                }
+            }
+
+
+            return result;
+        }
+
+        private object[,] MapArrivalsResultToResponseObject(Arrivals[,] arrivals, double[] hydrophoneR, double[] hydrophoneZ)
+        {
+            var rowsCount = arrivals.GetLength(0);
+            var colsCount = arrivals.GetLength(1);
+
+            var result = new object[rowsCount, colsCount];
+
+            for (var i = 0; i < rowsCount; i++)
+            {
+                for (var j = 0; j < colsCount; j++)
+                {
+                    var arrivalsTmp = new List<object>(arrivals[i, j].Arrival.Count);
+                    for (var k = 0; k < arrivals[i, j].Arrival.Count; k++)
+                    {
+                        arrivalsTmp.Add(new
+                        {
+                            Amp = Complex.Abs(arrivals[i, j].Arrival[k].Amp),
+                            arrivals[i, j].Arrival[k].Tau
+                        });
+                    }
+
+                    result[i, j] = new
+                    {
+                        Arrivals = arrivalsTmp
+                    };
                 }
             }
 
             return result;
         }
 
-        private List<object> MapArrivalsResultToResponseObject(Arrivals[,] arrivals)
+        private double[,] MapToTLRepresentation(Complex[,] source)
         {
-            var rowsCount = arrivals.GetLength(0);
-            var colsCount = arrivals.GetLength(1);
-            var result = new List<object>(rowsCount * colsCount * 5);
+            var rowsCount = source.GetLength(0);
+            var colsCount = source.GetLength(1);
 
+            var result = new double[rowsCount, colsCount];
             for (var i = 0; i < rowsCount; i++)
             {
                 for (var j = 0; j < colsCount; j++)
                 {
-                    for (var k = 0; k < arrivals[i, j].Arrival.Count; k++)
-                    {
-                        result.Add(new
-                        {
-                            Amp = Complex.Abs(arrivals[i, j].Arrival[k].Amp),
-                            arrivals[i, j].Arrival[k].Tau
-                        });
-                    }
+                    result[i, j] = -20 * Math.Log10(Complex.Abs(source[i, j]));
                 }
             }
 

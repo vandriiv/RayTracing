@@ -28,9 +28,7 @@ namespace RayTracing.CalculationModel.Models
 
         public double[] HydrophoneR { get; set; }
 
-        public double[] TL { get; set; }
-
-        public double?[,] TL2D { get; set; }
+        public double?[,] TL { get; set; }
 
         public Complex[,] Pressure2D { get; set; }
 

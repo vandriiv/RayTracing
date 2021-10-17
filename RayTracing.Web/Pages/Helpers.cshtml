@@ -69,6 +69,71 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-icon">
+                                <i class="flaticon-line-graph text-info"></i>
+                            </span>
+                            <h3 class="card-label">
+                                Math functions
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6">
+                                <div class="form-group">
+                                    <label>Input array</label>
+                                    <select name="mfFunc" id="mfFunc" class="form-control">
+                                        <option value="abs">abs</option>
+                                        <option value="exp">exp</option>
+                                        <option value="expm1">exp minus 1</option>
+                                        <option value="sin">sin</option>
+                                        <option value="cos">cos</option>
+                                        <option value="sinh">sinh</option>
+                                        <option value="cosh">cosh</option>
+                                        <option value="asin">asin</option>
+                                        <option value="acos">acos</option>
+                                        <option value="asinh">asinh</option>
+                                        <option value="acosh">acosh</option>
+                                        <option value="tan">tan</option>
+                                        <option value="atan">atan</option>
+                                        <option value="atanр">atanh</option>
+                                        <option value="atan2">atan2</option>
+                                        <option value="log">log</option>
+                                        <option value="log10">log10</option>
+                                    </select>
+                                </div>
+                            </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <label>Round to decimals points</label>
+                                        <input type="number" name="mfRound" id="mfRound" value="2" min="0" class="form-control" />
+                                    </div>
+                                </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label>Input array</label>
+                                    <textarea name="mfInput" id="mfInput" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label>Result</label>
+                                    <textarea name="mfResult" id="mfResult" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-outline-info mr-2" id="mfSubmit">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card card-custom gutter-b">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">
                                 <i class="flaticon-refresh text-info"></i>
                             </span>
                             <h3 class="card-label">
@@ -93,7 +158,7 @@
                         </div>
                         <div class="row">
                             <div class="col-12">
-                                <button type="button" class="btn btn-outline-success mr-2" id="dcRadToDegree">Radians to degrees</button>
+                                <button type="button" class="btn btn-outline-info mr-2" id="dcRadToDegree">Radians to degrees</button>
                                 <button type="button" class="btn btn-outline-warning mr-2" id="dcDegreeToRad">Degrees to radians</button>
                             </div>
                         </div>
@@ -235,9 +300,32 @@
                 $("#bottomCoordsR").val(rangeVector.map(x => x.toFixed(2).replace(/\.00$/, '')).join(' '));
                 $("#bottomCoordsWrapper").show();
             });
+
+            $("#mfSubmit").click(() => {
+                const func = $("#mfFunc").val();
+                const inputVal = $("#mfInput").val();
+                const result = $("#mfResult");
+                const roundTo = Number($("#lsRound").val());
+
+                const asArray = inputVal.split(' ');
+
+                if (!Array.isArray(asArray) || asArray.some(x => isNaN(x))) {
+                    alert('Provide number values');
+                    return;
+                }
+
+                const calculated = asArray.map(v => (Math[func](Number(v))).toFixed(roundTo).replace(/\.00$/, ''));
+
+                result.show();
+                result.val(calculated.join(' '));
+            });
         });
 
         function environmentDrawer(rangePoints, maxDepth) {
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+
             const displayBottomCoords = (data) => {
                 $("#bottomCoordsZ").val(data.map(x => x.toFixed(2).replace(/\.00$/, '')).join(' '));
             };
@@ -249,11 +337,12 @@
 
             // globals
             let activePoint = null;
-            let canvas = null;
 
             // Draw a line chart with two data sets
-            let ctx = document.getElementById("canvas").getContext("2d");
-            canvas = document.getElementById("canvas");
+            const canvas = document.getElementById("canvas");
+            let ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             window.myChart = Chart.Line(ctx, {
                 data: {
                     labels: range,
@@ -263,7 +352,8 @@
                             label: "Depth",
                             borderColor: "#786c4c",
                             fill: true,
-                            backgroundColor: "rgba(9, 195, 219, 0.2)"
+                            backgroundColor: "rgba(9, 195, 219, 0.2)",
+                            tension: 0.01
                         }
                     ]
                 },

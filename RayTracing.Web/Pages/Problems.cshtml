@@ -1,0 +1,22 @@
+﻿@page "/problems"
+@model RayTracing.Web.Pages.ProblemsModel
+@{
+    ViewData["Title"] = "Acoustic problems";
+}
+<div class="card card-custom gutter-b example example-compact">
+    <div class="card-header">
+        <h3 class="card-title">Common acoustic problems</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <ul>
+                    @foreach(var problem in Model.Problems)
+                    {
+                        <li><a asp-page="/Index" asp-route-problem="@problem.Key">@problem.Name</a> </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

@@ -449,9 +449,9 @@
                 </div>
                 <div class="col-12 col-sm-6 col-md-4">
                     <div class="form-group">
-                        <label asp-for="AcousticProblem.NumberOfHydrophonesAlogDepth"></label>
-                        <input type="number" asp-for="AcousticProblem.NumberOfHydrophonesAlogDepth" class="form-control" />
-                        <span asp-validation-for="AcousticProblem.NumberOfHydrophonesAlogDepth" class="alert-danger"></span>
+                        <label asp-for="AcousticProblem.NumberOfHydrophonesAlongDepth"></label>
+                        <input type="number" asp-for="AcousticProblem.NumberOfHydrophonesAlongDepth" class="form-control" />
+                        <span asp-validation-for="AcousticProblem.NumberOfHydrophonesAlongDepth" class="alert-danger"></span>
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-md-6">
@@ -499,6 +499,7 @@
         </div>
         <div class="card-footer">
             <button type="submit" id="submit_Btn" class="btn btn-light-success mr-2">Submit</button>
+            <button type="button" id="downloadJson_Btn" style="display: none" class="btn btn-light-warning mr-2">Download result JSON</button>
         </div>
     </form>
     <div id="plot-ssp">
@@ -509,6 +510,14 @@
     </div>
     <div id="plot-tl">
     </div>
+    <div id="plot-arrivals">
+    </div>
+    <div id="plot-pressure">
+    </div>
+    <div id="plot-pv-u">
+    </div>
+    <div id="plot-pv-w">
+    </div>
     <!--end::Form-->
 </div>
 
@@ -517,6 +526,9 @@
     <script src="~/lib/plotly-2.4.2.min.js"></script>
     <script>
         $(function () {
+            let latestJsonResult = {};
+            const downloadJsonBtn = $("#downloadJson_Btn");
+
             $('#AcousticProblem_SoundSpeed_SoundSpeedDistribution').change((e) => {
                 const value = e.target.value;
 
@@ -647,9 +659,15 @@
                 const layout = {
                     title: "Rays",
                     xaxis: {
+                        title: {
+                            text: 'Range (m)'
+                        },
                         range: [rangeStart, rangeEnd]
                     },
                     yaxis: {
+                        title: {
+                            text: 'Depth (m)'
+                        },
                         range: [depthEnd, depthStart]
                     },
                     showlegend: false
@@ -685,9 +703,15 @@
                 const layout = {
                     title: "Sound speed",
                     xaxis: {
+                        title: {
+                            text: 'Sound speed (m/s)'
+                        },
                         range: [Math.min(...sspc), Math.max(...sspc)]
                     },
                     yaxis: {
+                        title: {
+                            text: 'Depth (m)'
+                        },
                         range: [Math.max(...sspz), Math.min(...sspz)]
                     },
                     showlegend: false
@@ -712,18 +736,28 @@
                     hydrophoneRanges,
                     hydrophoneDepths} = data;
 
-                const plotData = eigenrays.map(ray => ({
-                    x: ray.r,
-                    y: ray.z,
-                    type: 'scatter',
-                    line: {
-                        width: 1
+                const plotData = [];
+
+                for (let i = 0; i < hydrophoneRanges.length; i++) {
+                    for (let j = 0; j < hydrophoneDepths.length; j++) {
+                        for (let k = 0; k < eigenrays[i][j].rays.length; k++) {
+                            plotData.push({
+                                x: eigenrays[i][j].rays[k].r,
+                                y: eigenrays[i][j].rays[k].z,
+                                type: 'scatter',
+                                name: `Hydrophone (${hydrophoneRanges[i]}, ${hydrophoneDepths[j]})`,
+                                line: {
+                                    width: 1
+                                }
+                            })
+                        }
                     }
-                }));
+                }
 
                 plotData.push({
                     x: bottomR,
                     y: bottomZ,
+                    name: 'Bottom',
                     type: 'scatter',
                     line: {
                         color: 'rgb(69, 51, 31)',
@@ -734,6 +768,7 @@
                 plotData.push({
                     x: surfaceR,
                     y: surfaceZ,
+                    name: 'Surface',
                     type: 'scatter',
                     line: {
                         color: 'rgb(9, 195, 219)',
@@ -753,35 +788,73 @@
                     }
                 });
 
-                plotData.push({
-                    x: hydrophoneRanges,
-                    y: hydrophoneDepths,
-                    type: 'scatter',
-                    mode: 'markers',
-                    marker: {
-                        size: 10,
-                        symbol: ['circle'],
-                    }
-                });
-
                 const layout = {
                     title: "Eigenrays",
+                    height: 600,
                     xaxis: {
+                        title: {
+                            text: 'Range (m)'
+                        },
                         range: [rangeStart, rangeEnd]
                     },
                     yaxis: {
+                        title: {
+                            text: 'Depth (m)'
+                        },
                         range: [depthEnd, depthStart]
                     },
-                    showlegend: false
                 };
 
                 Plotly.newPlot('plot-eigenrays', plotData, layout, { responsive: true });
             }
 
+            const buildArrivalsPlot = (data) => {
+                const {
+                    arrivals,
+                    hydrophoneRanges,
+                    hydrophoneDepths } = data;
+
+                const plotData = [];
+
+                for (let i = 0; i < hydrophoneRanges.length; i++) {
+                    for (let j = 0; j < hydrophoneDepths.length; j++) {
+                        for (let k = 0; k < arrivals[i][j].arrivals.length; k++) {
+                            console.log(arrivals[i][j].arrivals[k].tau);
+                            console.log(arrivals[i][j].arrivals[k].amp);
+                            plotData.push({
+                                x: [arrivals[i][j].arrivals[k].tau],
+                                y: [arrivals[i][j].arrivals[k].amp*1000],
+                                type: 'markers',
+                                name: `Hydrophone (${hydrophoneRanges[i]}, ${hydrophoneDepths[j]})`,
+                                marker: {
+                                    size: 5
+                                }
+                            })
+                        }
+                    }
+                }
+
+                const layout = {
+                    title: "Arrivals",
+                    height: 600,
+                    xaxis: {
+                        title: {
+                            text: 'Travel time (s)'
+                        }
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Ray amplitude * 10^(-3)'
+                        }
+                    }
+                };
+
+                Plotly.newPlot('plot-arrivals', plotData, layout, { responsive: true });
+            }
+
             const buildTLPlot = (data) => {
                 const {
-                    tL1D,
-                    tL2D,
+                    tl,
                     arrayType,
                     arrayR,
                     arrayZ,
@@ -794,10 +867,10 @@
                     sourceR,
                     sourceZ } = data;
 
-                if (arrayType != "@ArrayType.Linear") {
+                if (arrayType == "@ArrayType.Rectangular") {
                     const plotData = [
                         {
-                            z: tL2D,
+                            z: tl,
                             x: arrayR,
                             y: arrayZ,
                             type: 'heatmap',
@@ -829,9 +902,15 @@
                     const layout = {
                         title: "TL",
                         xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
                             range: [rangeStart, rangeEnd]
                         },
                         yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
                             range: [depthEnd, depthStart]
                         },
                         showlegend: false
@@ -839,10 +918,64 @@
 
                     Plotly.newPlot('plot-tl', plotData, layout, { responsive: true });
                 }
+                else if (arrayType == "@ArrayType.Horizontal") {
+                    const mappedTL = tl[0];
+
+                    const plotData = [{
+                        x: arrayR,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-tl', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Vertical") {
+                    const mappedTL = tl.map(x => x[0]).filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayZ,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-tl', plotData, layout, { responsive: true });
+                }
                 else {
                     const plotData = [
                         {
-                            z: arrayZ.map(() => tL1D),
+                            z: arrayZ.map(() => tl[0]),
                             x: arrayZ,
                             y: arrayR,
                             type: 'heatmap',
@@ -876,9 +1009,15 @@
                     const layout = {
                         title: "TL",
                         yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
                             range: [arrayR[0], arrayR[arrayR.length-1]]
                         },
                         xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
                             range: [arrayZ[0], arrayZ[arrayZ.length - 1]]
                         },
                         showlegend: false
@@ -888,16 +1027,554 @@
                 }
             }
 
+            const buildParticleVelocityWPlot = (data) => {
+                const {
+                    wtl,
+                    arrayType,
+                    arrayR,
+                    arrayZ,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ } = data;
+
+                if (arrayType == "@ArrayType.Rectangular") {
+                    const plotData = [
+                        {
+                            z: wtl,
+                            x: arrayR,
+                            y: arrayZ,
+                            type: 'heatmap',
+                        }
+                    ];
+
+                    plotData.push({
+                        x: bottomR,
+                        y: bottomZ,
+                        type: 'scatter',
+                        line: {
+                            color: 'rgb(69, 51, 31)',
+                            width: 3
+                        }
+                    })
+
+                    plotData.push({
+                        x: [sourceR],
+                        y: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [rangeStart, rangeEnd]
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [depthEnd, depthStart]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pv-w', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Horizontal") {
+                    const mappedTL = wtl[0].filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayR,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pv-w', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Vertical") {
+                    const mappedTL = wtl.map(x => x[0]).filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayZ,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pv-w', plotData, layout, { responsive: true });
+                }
+                else {
+                    const plotData = [
+                        {
+                            z: arrayZ.map(() => wtl[0]),
+                            x: arrayZ,
+                            y: arrayR,
+                            type: 'heatmap',
+                            hoverongaps: true
+                        }
+                    ];
+
+                    plotData.push({
+                        y: [sourceR],
+                        x: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    plotData.push({
+                        x: arrayZ,
+                        y: arrayR,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 10,
+                            symbol: ['circle'],
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [arrayR[0], arrayR[arrayR.length-1]]
+                        },
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [arrayZ[0], arrayZ[arrayZ.length - 1]]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pv-w', plotData, layout, { responsive: true });
+                }
+            }
+
+            const buildParticleVelocityUPlot = (data) => {
+                const {
+                    utl,
+                    arrayType,
+                    arrayR,
+                    arrayZ,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ } = data;
+
+                if (arrayType == "@ArrayType.Rectangular") {
+                    const plotData = [
+                        {
+                            z: utl,
+                            x: arrayR,
+                            y: arrayZ,
+                            type: 'heatmap',
+                        }
+                    ];
+
+                    plotData.push({
+                        x: bottomR,
+                        y: bottomZ,
+                        type: 'scatter',
+                        line: {
+                            color: 'rgb(69, 51, 31)',
+                            width: 3
+                        }
+                    })
+
+                    plotData.push({
+                        x: [sourceR],
+                        y: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [rangeStart, rangeEnd]
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [depthEnd, depthStart]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pv-u', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Horizontal") {
+                    const mappedTL = utl[0].filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayR,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pv-u', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Vertical") {
+                    const mappedTL = utl.map(x => x[0]).filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayZ,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pv-u', plotData, layout, { responsive: true });
+                }
+                else {
+                    const plotData = [
+                        {
+                            z: arrayZ.map(() => utl[0]),
+                            x: arrayZ,
+                            y: arrayR,
+                            type: 'heatmap',
+                            hoverongaps: true
+                        }
+                    ];
+
+                    plotData.push({
+                        y: [sourceR],
+                        x: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    plotData.push({
+                        x: arrayZ,
+                        y: arrayR,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 10,
+                            symbol: ['circle'],
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [arrayR[0], arrayR[arrayR.length-1]]
+                        },
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [arrayZ[0], arrayZ[arrayZ.length - 1]]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pv-u', plotData, layout, { responsive: true });
+                }
+            }
+
+            const buildPressurePlot = (data) => {
+                const {
+                    pressureTL,
+                    arrayType,
+                    arrayR,
+                    arrayZ,
+                    depthStart,
+                    depthEnd,
+                    rangeStart,
+                    rangeEnd,
+                    bottomR,
+                    bottomZ,
+                    sourceR,
+                    sourceZ } = data;
+
+                if (arrayType == "@ArrayType.Rectangular") {
+                    const plotData = [
+                        {
+                            z: pressureTL,
+                            x: arrayR,
+                            y: arrayZ,
+                            type: 'heatmap',
+                        }
+                    ];
+
+                    plotData.push({
+                        x: bottomR,
+                        y: bottomZ,
+                        type: 'scatter',
+                        line: {
+                            color: 'rgb(69, 51, 31)',
+                            width: 3
+                        }
+                    })
+
+                    plotData.push({
+                        x: [sourceR],
+                        y: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [rangeStart, rangeEnd]
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [depthEnd, depthStart]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pressure', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Horizontal") {
+                    const mappedTL = pressureTL[0].filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayR,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pressure', plotData, layout, { responsive: true });
+                }
+                else if (arrayType == "@ArrayType.Vertical") {
+                    const mappedTL = pressureTL.map(x => x[0]).filter(x => x !== null);
+
+                    const plotData = [{
+                        x: arrayZ,
+                        y: mappedTL,
+                        type: 'scatter'
+                    }];
+
+                    const layout = {
+                        title: "TL",
+                        showlegend: false,
+                        xaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                text: 'Transmission loss (dB)'
+                            },
+                            range: [Math.max(...mappedTL), Math.min(...mappedTL)]
+                        },
+                    };
+
+                    Plotly.newPlot('plot-pressure', plotData, layout, { responsive: true });
+                }
+                else {
+                    const plotData = [
+                        {
+                            z: arrayZ.map(() => pressureTL[0]),
+                            x: arrayZ,
+                            y: arrayR,
+                            type: 'heatmap',
+                            hoverongaps: true
+                        }
+                    ];
+
+                    plotData.push({
+                        y: [sourceR],
+                        x: [sourceZ],
+                        name: 'Source',
+                        type: 'markers',
+                        marker: {
+                            size: 25,
+                            color: 'rgb(248, 252, 3)',
+                            symbol: ['hexagram']
+                        }
+                    });
+
+                    plotData.push({
+                        x: arrayZ,
+                        y: arrayR,
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            size: 10,
+                            symbol: ['circle'],
+                        }
+                    });
+
+                    const layout = {
+                        title: "TL",
+                        yaxis: {
+                            title: {
+                                text: 'Depth (m)'
+                            },
+                            range: [arrayR[0], arrayR[arrayR.length-1]]
+                        },
+                        xaxis: {
+                            title: {
+                                text: 'Range (m)'
+                            },
+                            range: [arrayZ[0], arrayZ[arrayZ.length - 1]]
+                        },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('plot-pressure', plotData, layout, { responsive: true });
+                }
+            }
+
+            $("#downloadJson_Btn").on('click', function () {
+                // Create a blob of the data
+                const fileToSave = new Blob([JSON.stringify(latestJsonResult)], {
+                    type: 'application/json'
+                });
+
+                // Save the file
+                saveAs(fileToSave, `${latestJsonResult.calculationType}.json`);
+            });
+
             $('#submit_Btn').on('click', function (evt) {
                 evt.preventDefault();
 
                 $("#submit_Btn").prop('disabled', true);
+                $("#downloadJson_Btn").prop('disable', true);
                 $('div[id^="plot"]').empty();
 
                 if ($('form').valid()) {
                     $.post('', $('form').serialize())
                     .done(function (response) {
                         const { calculationType } = response;
+                        latestJsonResult = response;
+                        downloadJsonBtn.show();
                         switch (calculationType) {
                             case "@CalculationType.RayCoords.ToString()":
                                 buildRayCoordsPlot(response);
@@ -908,18 +1585,38 @@
                                 break;
                             case "@CalculationType.CohTransmissionLoss.ToString()":
                                 buildTLPlot(response);
+                                break;
                             case "@CalculationType.SoundSpeedProfile.ToString()":
                                 buildSSPPlot(response);
+                                break;
+                            case "@CalculationType.AmpDelayProximity.ToString()":
+                            case "@CalculationType.AmpDelayRegFalsi.ToString()":
+                                buildArrivalsPlot(response);
+                                break;
+                            case "@CalculationType.CohAcousticPressure.ToString()":
+                                buildPressurePlot(response);
+                                break;
+                            case "@CalculationType.PartVelocity.ToString()":
+                                buildParticleVelocityUPlot(response);
+                                buildParticleVelocityWPlot(response);
+                                break;
+                            case "@CalculationType.CohAccousicPressurePartVelocity.ToString()":
+                                buildPressurePlot(response);
+                                buildParticleVelocityUPlot(response);
+                                buildParticleVelocityWPlot(response);
+                                break;
                             default:
                                 break;
                         };
 
                     })
                     .fail(function (error) {
-                        console.log(error);
+                        downloadJsonBtn.hide();
+                        latestJsonResult = {};
                     })
                     .always(function () {
                         $("#submit_Btn").prop('disabled', false);
+                        $("#downloadJson_Btn").prop('disable', false);
                     });
                 }
             });

@@ -69,7 +69,7 @@ namespace RayTracing.Web.Models
         public int NumberOfHydrophonesAlongRange { get; set; }
 
         [Display(Name = "Number of hydrophones along depth")]
-        public int NumberOfHydrophonesAlogDepth { get; set; }
+        public int NumberOfHydrophonesAlongDepth { get; set; }
 
         [Display(Name = "Array type")]
         public ArrayType HydrophoneArrayType { get; set; }

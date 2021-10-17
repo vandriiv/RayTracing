@@ -6,8 +6,8 @@ namespace RayTracing.CalculationModel.Models
     {
         [Description("Calculate Ray Coordinates")]
         RayCoords,
-        [Description("Calculate All Ray Information")]
-        AllRayInfo,
+        //[Description("Calculate All Ray Information")]
+        //AllRayInfo,
         [Description("Calculate Eigenrays (Regula Falsi)")]
         EigenraysRegFalsi,
         [Description("Calculate Eigenrays (Proximity method)")]
@@ -16,13 +16,13 @@ namespace RayTracing.CalculationModel.Models
         AmpDelayRegFalsi,
         [Description("Calculate Amplitudes and Delays (Proximity method)")]
         AmpDelayProximity,
-        [Description("Calculate Coherent acoustic Pressure")]
+        [Description("Calculate Acoustic Pressure")]
         CohAcousticPressure,
-        [Description("Calculate Coherent Transmission Loss")]
+        [Description("Calculate Transmission Loss")]
         CohTransmissionLoss,
-        [Description("Calculate coherent Particle VeLocity")]
+        [Description("Calculate Particle Velocity")]
         PartVelocity,
-        [Description("Calculate Coherent acoustic pressure And particle velocity")]
+        [Description("Calculate Acoustic Pressure And Particle Velocity")]
         CohAccousicPressurePartVelocity,
         [Description("Sound speed profile")]
         SoundSpeedProfile

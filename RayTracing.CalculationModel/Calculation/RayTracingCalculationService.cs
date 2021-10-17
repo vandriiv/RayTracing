@@ -18,10 +18,10 @@ namespace RayTracing.CalculationModel.Calculation
                     result = CalcRayCoords(settings);
                     break;
 
-                case CalculationType.AllRayInfo:
-                    Console.WriteLine("Calculating all ray information [ARI].");
-                    result = CalcAllRayInfo(settings);
-                    break;
+                //case CalculationType.AllRayInfo:
+                //    Console.WriteLine("Calculating all ray information [ARI].");
+                //    result = CalcAllRayInfo(settings);
+                //    break;
 
                 case CalculationType.EigenraysProximity:
                     Console.WriteLine("Calculating eigenrays by proximity method [EPR].");
@@ -78,9 +78,16 @@ namespace RayTracing.CalculationModel.Calculation
             return result;
         }
 
+
+        /*  Given a sequence x0 < x1 < ... <xj < ... < xn, and a number xi, such that:          *
+         *       x0 < xi < xn,                                                                  *
+         *  with xi not belonging to the sequence, determine j such that:                       *
+         *       xj < xi < x[j+1]                                                               *
+         *                                                                                      *
+         *  Used to determine between which values to interpolate.                              */
         private int Bracket(int n, double[] x, double xi)
         {
-            int ia = 0, im, ib = n-1;
+            int ia = 0, im, ib = n - 1;
 
             if ((xi < x[0]) || (xi > x[n - 1]))
             {
@@ -103,6 +110,7 @@ namespace RayTracing.CalculationModel.Calculation
             return ia;
         }
 
+        // Calculates eigenrays using proximity method.
         private CalculationResult СalcEigenrayPr(Settings settings)
         {
             double junkDouble = 0;
@@ -247,12 +255,22 @@ namespace RayTracing.CalculationModel.Calculation
             return _result;
         }
 
+        // Perform linear interpolation at 1D.
+        /* Inputs:                                                                             *
+         *          x:      vector containing x0, x1                                            *
+         *          f:      vector containing f0, f1                                            *
+         *          xi:     scalar (the interpolation point)                                    *
+         *                                                                                      *
+         *  Outputs:                                                                            *
+         *          fi:     interpolated value of f at xi                                       *
+         *          fxi:    derivative of f at xi                                               */
         private void IntLinear1D(double[] x, double[] f, double xi, ref double fi, ref double fxi, int offset = 0)
         {
             fxi = (f[1 + offset] - f[0 + offset]) / (x[1 + offset] - x[0 + offset]);
             fi = f[0 + offset] + (xi - x[0 + offset]) * fxi;
         }
 
+        // Calculates eigenrays using Regula-Falsi method.
         private CalculationResult CalcEigenrayRF(Settings settings)
         {
             double thetai, ctheta;
@@ -331,7 +349,7 @@ namespace RayTracing.CalculationModel.Calculation
                     double zHyd = settings.Output.ArrayZ[j];
                     for (k = 0; k < nRays; k++)
                     {
-                        dz[k] = zHyd - depths[k,i];
+                        dz[k] = zHyd - depths[k, i];
                     }
                     nPossibleEigenRays = 0;
                     for (k = 0; k < nRays - 1; k++)
@@ -340,8 +358,8 @@ namespace RayTracing.CalculationModel.Calculation
                         fr = dz[k + 1];
                         prod = fl * fr;
 
-                        if (double.IsNaN(depths[k,i]) == false &&
-                            double.IsNaN(depths[k + 1,i]) == false)
+                        if (double.IsNaN(depths[k, i]) == false &&
+                            double.IsNaN(depths[k + 1, i]) == false)
                         {
                             if ((fl == 0.0) && (fr != 0.0))
                             {
@@ -479,6 +497,18 @@ namespace RayTracing.CalculationModel.Calculation
 
             return _result;
         }
+
+        // Perform Barycentric Cubic interpolation at 1D.
+        /*  Inputs:                                                                             *
+        *          x:      vector containing x0, x1, x2, x3                                    *
+        *          f:      vector containing f0, f1, f2, f3                                    *
+        *          xi:     scalar (the interpolation point)                                    *
+        *          NOTE: this function assumes that:                                           *
+        *                  x0 < x1 <  xi  < x2 < x3                                            *
+        *  Outputs:                                                                            *
+        *          fi:     interpolated value of f at xi                                       *
+        *          fxi:    1st derivative of f at xi                                           *
+        *          fxxi:   2nd derivative of f at xi                                           **/
         private void IntBarycCubic1D(double[] x, double[] f, double xi, ref double fi, ref double fxi, ref double fxxi, int offset = 0)
         {
             double[] a = new double[3],
@@ -519,6 +549,7 @@ namespace RayTracing.CalculationModel.Calculation
             }
         }
 
+        //Calculate Thorpe attenuation.
         private double Thorpe(double freq)
         {
             var fxf = Math.Pow(freq / 1000, 2);
@@ -528,8 +559,18 @@ namespace RayTracing.CalculationModel.Calculation
             return alpha;
         }
 
+        // Calculate the dot product of 2 vectors.
         private double DotProduct(Vector u, Vector v) => u.R * v.R + u.Z * v.Z;
 
+        //Calculate a vector's reflection of a surface.
+        /*  Inputs:                                                                             *
+         *          normal: A pointer to the surface's normal vector.                           *
+         *          tauI:   A pointer to the incident vector.                                   *
+         *                                                                                      *
+         *  Outputs:                                                                            *
+         *          tauR:   A pointer to the reflected vector.                                  *
+         *          theta:  The angle between the surface normal and the reflected              *
+         *                  vector                                                              */
         private double SpecularReflection(Vector normal, Vector tauI, Vector tauR)
         {
             var c = DotProduct(normal, tauI);
@@ -542,6 +583,7 @@ namespace RayTracing.CalculationModel.Calculation
             return theta;
         }
 
+        // Calculates the reflection coefficient of a boudary between two media.
         private Complex BoundaryReflectionCoeff(double rho1, double rho2, double cp1, double cp2, double cs2, double ap, double As, double theta)
         {
             var log10e = Math.Log10(Math.E);
@@ -566,6 +608,7 @@ namespace RayTracing.CalculationModel.Calculation
             return refl;
         }
 
+        // Convert from several atenuation units to dB/lambda.
         private double ConvertUnits(double aIn, double lambda, double freq, AttenUnits units)
         {
             const double c1 = 8.68588963806504;
@@ -582,6 +625,21 @@ namespace RayTracing.CalculationModel.Calculation
             };
         }
 
+        // Perform 2D piecewise Barycentric Parabolic interpolation.
+        /*  Inputs:                                                                             *
+         *          x:      vector containing x0, x1, x2.                                       *
+         *          y:      vector containing y0, y1, y2.                                       *
+         *          f:      vector containing f(x,y).                                           *
+         *          xi:     x coordinate of the interpolation point.                            *
+         *          xy:     y coordinate of the interpolation point.                            *
+         *                                                                                      *
+         *  Outputs:                                                                            *
+         *          fi:     interpolated value of f at xi                                       *
+         *          fxi:    1st derivative of f in order to x.                                  *
+         *          fyi:    1st derivative of f in order to y.                                  *
+         *          fxxi:   2nd derivative of f in order to x.                                  *
+         *          fyyi:   2nd derivative of f in order to y.                                  *
+         *          fxyi:   2nd derivative of f in order to x and y.                            */
         private void IntBarycParab2D(double[] x, double[] y, double[,] f, double xi, double yi,
             ref double fi, ref double fxi, ref double fyi, ref double fxxi, ref double fyyi, ref double fxyi)
         {
@@ -603,7 +661,7 @@ namespace RayTracing.CalculationModel.Calculation
             {
                 for (var j = 0; j < 3; j++)
                 {
-                    a[i, j] = f[i,j] / (px[j] * py[i]);
+                    a[i, j] = f[i, j] / (px[j] * py[i]);
                 }
             }
 
@@ -644,6 +702,7 @@ namespace RayTracing.CalculationModel.Calculation
             }
         }
 
+        // Perform Barycentric Parabolic interpolation at 1D on complex numbers.
         private void IntComplexBarycParab1D(double[] x, Complex[] f, Complex xi, ref Complex fi,
             ref Complex fxi, ref Complex fxxi)
         {
@@ -664,12 +723,22 @@ namespace RayTracing.CalculationModel.Calculation
             fxxi = a1 * 2.0 + a2 * 2.0;
         }
 
+        // Perform linear interpolation at 1D using imaginary numbers.
+        /*  Inputs:                                                                             *
+         *          x:      vector containing x0, x1                                            *
+         *          f:      vector containing f0, f1                                            *
+         *          xi:     scalar (the interpolation point)                                    *
+         *                                                                                      *
+         *  Outputs:                                                                            *
+         *          fi:     interpolated value of f at xi                                       *
+         *          fxi:    derivative of f at xi                                               */
         private void IntComplexLinear1D(double[] x, Complex[] f, Complex xi, ref Complex fi, ref Complex fxi, int offset = 0)
         {
             fxi = (f[1 + offset] - f[0 + offset]) / (x[1 + offset] - x[0 + offset]);
             fi = f[0 + offset] + (xi - x[0 + offset]) * fxi;
         }
 
+        // Generate a linearly spaced vector.
         private double[] LinearSpaced(int n, double xMin, double xMax)
         {
             var x = new double[n];
@@ -682,6 +751,7 @@ namespace RayTracing.CalculationModel.Calculation
             return x;
         }
 
+        // Reflection correction subroutine.
         private double ReflectionCorr(int iTop,
             Vector sigma,
             Vector tauB,
@@ -717,6 +787,7 @@ namespace RayTracing.CalculationModel.Calculation
             return rm * (4 * cn - 2 * rm * cs) / ci;
         }
 
+        // Calculate intersection point between two Lines
         private void LineLineIntersec(Point p1,
             Point p2,
             Point q1,
@@ -796,6 +867,21 @@ namespace RayTracing.CalculationModel.Calculation
             normal.Z = taub.R;
         }
 
+        // Perform Interpolation of soundspeed and slowness, and its derivatives.
+        /*  Inputs:                                                                             *
+         *          settings:   input data                                                      *
+         *          ri:         range of interpolation point.                                   *
+         *          zi:         depth of interpolation point.                                   *
+         *  Outputs:                                                                            *
+         *          ci:         interpolated value of c.                                        *
+         *          cc:         ci squared.                                                     *
+         *          si:         inverse of ci. ( 1/ci = sigmai)                                 *
+         *          cri:        1st derivative of c with respect to r.                          *
+         *          czi:        1st derivative of c with respect to z.                          *
+         *          slowness:   slowness vector at interpolation point.                         *
+         *          crri:       2nd derivative of c with respect to r.                          *
+         *          czzi:       2nd derivative of c with respect to z.                          *
+         *          crzi:       partial derivative of c with respect to z and r                 */
         private void CsValues(
             Settings settings, double ri, double zi, ref double ci, ref double cc, ref double si, ref double cri,
             ref double czi, Vector slowness, ref double crri, ref double czzi, ref double crzi)
@@ -892,6 +978,7 @@ namespace RayTracing.CalculationModel.Calculation
             slowness.Z = -czi / cc;
         }
 
+        // Perform 2-Dimensional piecewise Interpolation of sound speed and its derivatives.
         private void CValues2D(
             int nx, int ny, double[] xTable, double[] yTable, double[,] cTable, double xi, double yi,
             ref double ci, ref double cxi, ref double cyi, ref double cxxi, ref double cyyi, ref double cxyi)
@@ -930,13 +1017,14 @@ namespace RayTracing.CalculationModel.Calculation
             {
                 for (var b = 0; b < 3; b++)
                 {
-                    tempDouble2D[a, b] = cTable[j + a,i + b];
+                    tempDouble2D[a, b] = cTable[j + a, i + b];
                 }
             }
 
             IntBarycParab2D(xTable, yTable, tempDouble2D, xi, yi, ref ci, ref cxi, ref cyi, ref cxxi, ref cyyi, ref cxyi);
         }
 
+        // Perform 1-Dimensional Interpolation of sound speed and its derivatives.
         private void CValues1D(int n, double[] xTable, double[] cTable, double xi, ref double ci,
             ref double cxi, ref double cxxi)
         {
@@ -963,6 +1051,7 @@ namespace RayTracing.CalculationModel.Calculation
             }
         }
 
+        // Interpolates the sound speed with depth and over a certain number of points.
         public CalculationResult CalcSSP(Settings settings)
         {
             var nPoints = settings.Options.NSSPPoints;
@@ -993,6 +1082,23 @@ namespace RayTracing.CalculationModel.Calculation
             };
         }
 
+        // Perform Rung-Kutta-Fehlberg integartion.
+        /* Inputs:                                                                              *
+         *          dsi:    Step size used for interpolation (often callen h)                   *
+         *          yOld:   Vector containing initial value of y:                               *
+         *                      yOld[0]:    r:      range coordinate                            *
+         *                      yOld[1]:    z:      depth coordinate                            *
+         *                      yOld[2]:    sigmaR: range component of slowness vector          *
+         *                      yOld[3]:    sigmaZ: depth component of slowness vector          *
+         *          fOld:   Vector containing initial value of F, as defined for yOld.          *
+         *                                                                                      *
+         * Outputs:                                                                             *
+         *          yNew:   Vector containing new values of of y.                               *
+         *          fNew:   Vector containing new values of of F.                               *
+         *          ds4:    Step size derived of RK4.                                           *
+         *          ds5:    Step size derived of RK5.                                           *
+         *                  ds4 and ds5 are checked in the calling function to verify           *
+         *                  that the precision corresponds to requirements.                     */
         private void RKF45(Settings settings, ref double dsi, double[] yOld, double[] fOld, double[] yNew, double[] fNew, ref double ds4, ref double ds5)
         {
             double[] k1 = new double[4];
@@ -1138,6 +1244,7 @@ namespace RayTracing.CalculationModel.Calculation
             fNew[3] = slowness.Z;
         }
 
+        /// Interpolate depth of unknown boundary points.
         private void BoundaryInterpolation(
             Interface @interface,
             double ri,
@@ -1156,6 +1263,7 @@ namespace RayTracing.CalculationModel.Calculation
                 normal);
         }
 
+        /*A raytracing subroutine for cylindrical simmetry. Calculates a ray's trajectory.*/
         private void SolveEikonalEq(Settings settings, Ray ray)
         {
             double cx = 0,
@@ -1748,6 +1856,7 @@ namespace RayTracing.CalculationModel.Calculation
             ray.RMax = Math.Max(ray.RMax, ray.R[ray.NCoords - 1]);
         }
 
+        //Determine the intersection point between a ray and a boundary.
         private void RayBoundaryIntersection(Interface @interface, Point a, Point b, Point isect)
         {
             int i = 0;
@@ -1818,6 +1927,7 @@ namespace RayTracing.CalculationModel.Calculation
             RayBoundaryIntersection(tempInterface, a, b, isect);
         }
 
+        /*A raytracing subroutine for cylindrical simmetry. Calculates complex amplitude along a ray's path*/
         private void SolveDynamicEq(Settings settings, Ray ray)
         {
             int ibdry;
@@ -1926,6 +2036,7 @@ namespace RayTracing.CalculationModel.Calculation
             ray.Amp[0] = double.NaN;
         }
 
+        // Calculates particle velocity from coherent acoustic pressure.
         private CalculationResult CalcParticleVel(Settings settings, CalculationResult result = null)
         {
             double rHyd, zHyd;
@@ -1987,7 +2098,7 @@ namespace RayTracing.CalculationModel.Calculation
 
                             IntComplexBarycParab1D(xp, settings.Output.PressureH.GetThirdDimension(j, k), rHyd, ref junkComplex, ref dP_dRi, ref junkComplex);
 
-                            dP_dR2D[j,k] = -Complex.ImaginaryOne * dP_dRi;
+                            dP_dR2D[j, k] = -Complex.ImaginaryOne * dP_dRi;
 
                             xp[0] = zHyd - dz;
                             xp[1] = zHyd;
@@ -1995,7 +2106,7 @@ namespace RayTracing.CalculationModel.Calculation
 
                             IntComplexBarycParab1D(xp, settings.Output.PressureV.GetThirdDimension(j, k), zHyd, ref junkComplex, ref dP_dZi, ref junkComplex);
 
-                            dP_dZ2D[j,k] = Complex.ImaginaryOne * dP_dZi;
+                            dP_dZ2D[j, k] = Complex.ImaginaryOne * dP_dZi;
                         }
                     }
                     break;
@@ -2011,7 +2122,7 @@ namespace RayTracing.CalculationModel.Calculation
 
                         IntComplexBarycParab1D(xp, settings.Output.PressureH.GetThirdDimension(0, j), rHyd, ref junkComplex, ref dP_dRi, ref junkComplex);
 
-                        dP_dR2D[0,j] = -Complex.ImaginaryOne * dP_dRi;
+                        dP_dR2D[0, j] = -Complex.ImaginaryOne * dP_dRi;
 
                         xp[0] = zHyd - dz;
                         xp[1] = zHyd;
@@ -2019,7 +2130,7 @@ namespace RayTracing.CalculationModel.Calculation
 
                         IntComplexBarycParab1D(xp, settings.Output.PressureV.GetThirdDimension(0, j), zHyd, ref junkComplex, ref dP_dZi, ref junkComplex);
 
-                        dP_dZ2D[0,j] = Complex.ImaginaryOne * dP_dZi;
+                        dP_dZ2D[0, j] = Complex.ImaginaryOne * dP_dZi;
                     }
                     break;
             }
@@ -2041,6 +2152,7 @@ namespace RayTracing.CalculationModel.Calculation
             return _result;
         }
 
+        // Calculates rays coords.
         private CalculationResult CalcRayCoords(Settings settings)
         {
             Ray[] rays = new Ray[settings.Source.NThetas];
@@ -2063,6 +2175,7 @@ namespace RayTracing.CalculationModel.Calculation
             };
         }
 
+        // Calculates Coherent Transmission Loss.
         private CalculationResult CalcCohTransLoss(Settings settings, CalculationResult result = null)
         {
             var _result = result ?? new CalculationResult();
@@ -2077,19 +2190,20 @@ namespace RayTracing.CalculationModel.Calculation
                         for (var j = 0; j < settings.Output.NArrayZ; j++)
                         {
                             var temp = -20.0 * Math.Log10(Complex.Abs(settings.Output.Pressure2D[i, j]));
-                            tl2D[i, j] = double.IsFinite(temp) ? temp : (double?)null;
+                            tl2D[i, j] = temp;
                         }
                     }
-                    _result.TL2D = tl2D.Transpose();
+                    _result.TL = tl2D.Transpose();
                     break;
 
                 case ArrayType.Linear:
                     int dim = Math.Max(settings.Output.NArrayR, settings.Output.NArrayZ);
-                    var tl = new double[dim];
+                    var tl = new double?[1, dim];
 
                     for (var j = 0; j < dim; j++)
                     {
-                        tl[j] = -20.0 * Math.Log10(Complex.Abs(settings.Output.Pressure2D[0, j]));
+                        var temp = -20.0 * Math.Log10(Complex.Abs(settings.Output.Pressure2D[0, j]));
+                        tl[0, j] = temp;
                     }
 
                     _result.TL = tl;
@@ -2099,6 +2213,20 @@ namespace RayTracing.CalculationModel.Calculation
             return _result;
         }
 
+        // Interpolates ray parameters
+        /*  Inputs:                                                                             *
+         *          ray:    Pointer to structure containing a ray.                              *
+         *          iHyd:   Index at which to interpolate.                                      *
+         *          q0:     TODO                                                                *
+         *          rHyd:   Range of hydrophone.                                                *
+         *                                                                                      *
+         *  Outputs:                                                                            *
+         *          dzdr:   Derivative of z in order to r (i.e. its Slope).                     *
+         *          tauRay: The ray's propagation delay at hydrophone.                          *
+         *          zRay:   The ray's depth.                                                    *
+         *          ampRay: The ray's complex Amplitude.                                        *
+         *          qRay:   TODO                                                                *
+         *          width:  Width of the beam.                                                  **/
         private void GetRayParameters(Ray ray, int iHyd, double q0, double rHyd, ref double dzdr, ref double tauRay, ref double zRay, ref Complex ampRay, ref double qRay, ref double width)
         {
             Complex junkComplex = new Complex();
@@ -2118,6 +2246,24 @@ namespace RayTracing.CalculationModel.Calculation
             width /= ((q0) * Math.Cos(theta));
         }
 
+        // Calculates "ray pressure"
+        /*  Inputs (when using "explicit" version):                                             *
+*          settings:   Pointer to the settings structure.                              *
+*          ray:        Pointer to structure containing a ray.                          *
+*          iHyd:       Index at which to interpolate.                                  *
+*          rHyd:       Range of hydrophone.                                            *
+*          zHyd:       Depth of hydrophone.                                            *
+*          tauRay      Ray's propagation delay at hydrophone.                          *
+*          zRay:       The ray's depth.                                                *
+*          dzdr:       Derivative of z in order to r (i.e. its Slope).                 *
+*          ampRay:     The ray's complex Amplitude.                                    *
+*          width:      Width of the beam.                                              *
+*                                                                                      *
+*  Inputs (when using short version):                                                  *
+*          ray:        Pointer to structure containing a ray.                          *
+*          iHyd:       Index at which to interpolate.                                  *
+*          q0:         TODO                                                            *
+*          rHyd:       Range of hydrophone.                                            */
         private void GetRayPressure(Settings settings, Ray ray, int iHyd, double q0, double rHyd, double zHyd, ref Complex pressure)
         {
             double dzdr = 0, tauRay = 0, zRay = 0, qRay = 0, width = 0;
@@ -2170,6 +2316,8 @@ namespace RayTracing.CalculationModel.Calculation
             }
         }
 
+        // Determines the star pressure contributions for particle velocity components of a
+        // specific ray at a specify coordinate
         private int PressureStar(Settings settings, Ray ray, double rHyd, double zHyd, double q0, Complex[] pressure_H, Complex[] pressure_V)
         {
             double dzdr = 0, tauRay = 0, zRay = 0, qRay = 0, width = 0;
@@ -2244,6 +2392,7 @@ namespace RayTracing.CalculationModel.Calculation
             return 1;
         }
 
+        // Extended bracket -bracketing with non-uniformly ordered data.
         private void EBracket(int n, double[] x, double xi, ref int nb, int[] ib)
         {
             int i;
@@ -2264,6 +2413,18 @@ namespace RayTracing.CalculationModel.Calculation
             }
         }
 
+        /* *  Determines the star pressure contributions for particle velocity components of a*
+         *  specific ray at a specify coordinate for rays that bounce back ("returning rays").  *
+         *                                                                                      *
+         *  When rays return they may influence a hydrophone more than once, hence we need to   *
+         *  use eBracket to find all indices at which the ray passes the hydrophone.            */
+        /* Outputs:                                                                             *
+        *          pressure_H: A 3 element array containing the horizontal                     *
+        *                      pressure components ( LEFT, CENTER, RIGHT).                     *
+        *          pressure_V: A 3 element array containing the vertical                       *
+        *                      pressure components ( TOP, CENTER, BOTTOM).                     *
+        *                      NOTE:   there is redundacy in the above arrays: the center      *
+        *                              component is repeated for performance reasons.          */
         private int PressureMStar(Settings settings, Ray ray, double rHyd, double zHyd, double q0, Complex[] pressure_H, Complex[] pressure_V)
         {
             int i, jj;
@@ -2271,7 +2432,7 @@ namespace RayTracing.CalculationModel.Calculation
             Complex ampRay = new Complex();
             int nRet = 0;
             int[] iRet = new int[51];
-            Complex [] tempPressure = new Complex[3];
+            Complex[] tempPressure = new Complex[3];
             double rLeft = rHyd - settings.Output.Dr;
             double rRight = rHyd + settings.Output.Dr;
             double zBottom = zHyd - settings.Output.Dz;
@@ -2317,10 +2478,11 @@ namespace RayTracing.CalculationModel.Calculation
                 GetRayPressureExplicit(settings, ray, iRet[jj], zHyd, tauRay, zRay, dzdr, ampRay, width, ref tempPressure[2]);
                 pressure_H[2] += tempPressure[2];
             }
-            
+
             return 1;
         }
 
+        // Calculates ray info
         private CalculationResult CalcAllRayInfo(Settings settings)
         {
             var rays = new Ray[settings.Source.NThetas];
@@ -2345,6 +2507,7 @@ namespace RayTracing.CalculationModel.Calculation
             };
         }
 
+        // Calculates Amplitudes and Delays using proximity method.
         private CalculationResult CalcAmpDelPr(Settings settings)
         {
             double junkDouble = 0;
@@ -2415,8 +2578,8 @@ namespace RayTracing.CalculationModel.Calculation
                                             NBotRefl = rays[i].BRefl,
                                             NObjRefl = rays[i].ORefl
                                         });
-                                        arrivals[j,jj].NArrivals += 1;
-                                        maxNumArrivals = Math.Max(arrivals[j,jj].NArrivals, maxNumArrivals);
+                                        arrivals[j, jj].NArrivals += 1;
+                                        maxNumArrivals = Math.Max(arrivals[j, jj].NArrivals, maxNumArrivals);
                                     }
                                 }
                             }
@@ -2451,8 +2614,8 @@ namespace RayTracing.CalculationModel.Calculation
                                                 NObjRefl = rays[i].ORefl
                                             });
 
-                                            arrivals[j,jj].NArrivals += 1;
-                                            maxNumArrivals = Math.Max(arrivals[j,jj].NArrivals, maxNumArrivals);
+                                            arrivals[j, jj].NArrivals += 1;
+                                            maxNumArrivals = Math.Max(arrivals[j, jj].NArrivals, maxNumArrivals);
                                         }
                                     }
                                 }
@@ -2468,6 +2631,7 @@ namespace RayTracing.CalculationModel.Calculation
             return _result;
         }
 
+        // Calculates Amplitudes and arrivals using Regula Falsi method.
         private CalculationResult CalcAmpDelRF(Settings settings)
         {
             double thetai, ctheta;
@@ -2521,11 +2685,11 @@ namespace RayTracing.CalculationModel.Calculation
                         {
                             int iHyd = Bracket(rays[i].NCoords, rays[i].R, rHyd);
                             IntLinear1D(rays[i].R, rays[i].Z, rHyd, ref zRay, ref junkDouble, iHyd);
-                            depths[nRays,j] = zRay;
+                            depths[nRays, j] = zRay;
                         }
                         else
                         {
-                            depths[nRays,j] = double.NaN;
+                            depths[nRays, j] = double.NaN;
                         }
                     }
                     nRays++;
@@ -2544,7 +2708,7 @@ namespace RayTracing.CalculationModel.Calculation
                     zHyd = settings.Output.ArrayZ[j];
                     for (var k = 0; k < nRays; k++)
                     {
-                        dz[k] = zHyd - depths[k,i];
+                        dz[k] = zHyd - depths[k, i];
                     }
 
                     nPossibleArrivals = 0;
@@ -2554,8 +2718,8 @@ namespace RayTracing.CalculationModel.Calculation
                         fr = dz[k + 1];
                         prod = fl * fr;
 
-                        if (double.IsNaN(depths[k,i]) == false &&
-                            double.IsNaN(depths[k + 1,i]) == false)
+                        if (double.IsNaN(depths[k, i]) == false &&
+                            double.IsNaN(depths[k + 1, i]) == false)
                         {
 
                             if ((fl == 0.0) && (fr != 0.0))
@@ -2673,8 +2837,8 @@ namespace RayTracing.CalculationModel.Calculation
                                 NObjRefl = tempRay.ORefl
                             });
 
-                            arrivals[i,j].NArrivals += 1;
-                            maxNumArrivals = Math.Max(arrivals[i,j].NArrivals, maxNumArrivals);
+                            arrivals[i, j].NArrivals += 1;
+                            maxNumArrivals = Math.Max(arrivals[i, j].NArrivals, maxNumArrivals);
                         }
                     }
                 }
@@ -2686,6 +2850,7 @@ namespace RayTracing.CalculationModel.Calculation
             return _result;
         }
 
+        //  Calculates Coherent Acoustic Pressure.
         private CalculationResult CalcCohAcoustPress(Settings settings)
         {
             var rays = new Ray[settings.Source.NThetas];
@@ -2757,7 +2922,7 @@ namespace RayTracing.CalculationModel.Calculation
 
                 settings.Output.Dr = dr;
                 settings.Output.Dz = dz;
-                settings.Output.PressureH = new Complex[dimR,dimZ,3];
+                settings.Output.PressureH = new Complex[dimR, dimZ, 3];
                 settings.Output.PressureV = new Complex[dimR, dimZ, 3];
             }
             if (settings.Output.CalculationType == CalculationType.CohAcousticPressure ||
@@ -2795,7 +2960,7 @@ namespace RayTracing.CalculationModel.Calculation
                                         if (rHyd >= rays[i].RMin && rHyd < rays[i].RMax)
                                         {
                                             if (rays[i].IReturn == false)
-                                            { 
+                                            {
                                                 for (var k = 0; k < dimZ; k++)
                                                 {
                                                     zHyd = settings.Output.ArrayZ[k];
@@ -2804,8 +2969,8 @@ namespace RayTracing.CalculationModel.Calculation
                                                     {
                                                         for (var l = 0; l < 3; l++)
                                                         {
-                                                            settings.Output.PressureH[j,k,l] += pressure_H[l];
-                                                            settings.Output.PressureV[j,k,l] += pressure_V[l];
+                                                            settings.Output.PressureH[j, k, l] += pressure_H[l];
+                                                            settings.Output.PressureV[j, k, l] += pressure_V[l];
                                                         }
                                                     }
                                                 }
@@ -2819,8 +2984,8 @@ namespace RayTracing.CalculationModel.Calculation
                                                     {
                                                         for (var l = 0; l < 3; l++)
                                                         {
-                                                            settings.Output.PressureH[j,k,l] += pressure_H[l];
-                                                            settings.Output.PressureV[j,k,l] += pressure_V[l];
+                                                            settings.Output.PressureH[j, k, l] += pressure_H[l];
+                                                            settings.Output.PressureV[j, k, l] += pressure_V[l];
                                                         }
                                                     }
                                                     else
@@ -2850,8 +3015,8 @@ namespace RayTracing.CalculationModel.Calculation
                                                 {
                                                     for (var l = 0; l < 3; l++)
                                                     {
-                                                        settings.Output.PressureH[0,j,l] += pressure_H[l];
-                                                        settings.Output.PressureV[0,j,l] += pressure_V[l];
+                                                        settings.Output.PressureH[0, j, l] += pressure_H[l];
+                                                        settings.Output.PressureV[0, j, l] += pressure_V[l];
                                                     }
                                                 }
                                             }
@@ -2861,8 +3026,8 @@ namespace RayTracing.CalculationModel.Calculation
                                                 {
                                                     for (var l = 0; l < 3; l++)
                                                     {
-                                                        settings.Output.PressureH[0,j,l] += pressure_H[l];
-                                                        settings.Output.PressureV[0,j,l] += pressure_V[l];
+                                                        settings.Output.PressureH[0, j, l] += pressure_H[l];
+                                                        settings.Output.PressureV[0, j, l] += pressure_V[l];
                                                     }
                                                 }
                                             }
@@ -2968,7 +3133,7 @@ namespace RayTracing.CalculationModel.Calculation
                     {
                         for (var i = 0; i < dimZ; i++)
                         {
-                            settings.Output.Pressure2D[j,i] = settings.Output.PressureH[j,i,1];
+                            settings.Output.Pressure2D[j, i] = settings.Output.PressureH[j, i, 1];
                         }
                     }
                 }
