@@ -11,12 +11,10 @@
     </div>
     <!--begin::Form-->
     <div class="card-body">
-        @if (!Model.ModelState.IsValid)
-        {
-            <div class="row">
+            <div class="row" id="modelstate-errors" style=@(!Model.ModelState.IsValid ? "" : "display:none")>
                 <div class="alert alert-custom alert-outline-2x alert-outline-danger fade show mb-5" role="alert">
                     <div class="alert-icon"><i class="flaticon-warning"></i></div>
-                    <div class="text-danger alert-text">
+                    <div class="text-danger alert-text" id="errors-list">
                         @foreach(var error in Model.ModelState.Values.SelectMany(v => v.Errors))
                         {
                             <p>@error.ErrorMessage</p>
@@ -29,7 +27,6 @@
                     </div>
                 </div>
             </div>
-        }
         <div class="row mb-3">
             <div class="form-group">
                 <form method="post" id="input-file-form" asp-page-handler="FileUpload" enctype="multipart/form-data">
@@ -1569,7 +1566,41 @@
                 }
             }
 
+            const clearErrors = () => {
+                $("#modelstate-errors").hide();
+                $("#errors-list").empty();
+            };
+
+            const showErrors = (errors) => {
+                let errorsList = [];
+                for (let error of Object.values(errors)) {
+                    for (let propertyError of error) {
+                        $("#errors-list").append(`<p>${propertyError}</p>`);
+                    }
+                    errorsList = errorsList.concat(error);
+                }
+
+                if (errorsList.length > 0) {
+                    $("#modelstate-errors").show();
+                }
+            };
+
+            const showInternalServerError = () => {
+                $("#modelstate-errors").show();
+                $("#errors-list").append(`<p>Unexpected server error</p>`);
+            };
+
+            const handleServerErrors = (errorResponse) => {
+                if (errorResponse.status === 400) {
+                    showErrors(errorResponse.responseJSON);
+                }
+                else {
+                    showInternalServerError();
+                }
+            };
+
             $("#inputDownload_Btn").on('click', function () {
+                clearErrors();
                 if ($('#input-form').valid()) {
                     $.post('/Index?handler=Serialize', $('#input-form').serialize())
                         .done(function (response) {
@@ -1582,7 +1613,7 @@
                             saveAs(fileToSave, 'formData.json');
                         })
                         .fail(function (error) {
-                            console.log(error);
+                            handleServerErrors(error);
                         });
                 }
             });
@@ -1597,6 +1628,7 @@
 
             $('#submit_Btn').on('click', function (evt) {
                 evt.preventDefault();
+                clearErrors();
 
                 $("#submit_Btn").prop('disabled', true);
                 $("#downloadJson_Btn").prop('disable', true);
@@ -1646,6 +1678,7 @@
                     .fail(function (error) {
                         downloadJsonBtn.hide();
                         latestJsonResult = {};
+                        handleServerErrors(error);
                     })
                     .always(function () {
                         $("#submit_Btn").prop('disabled', false);

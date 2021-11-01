@@ -260,40 +260,40 @@ namespace RayTracing.Web.Models.Validators
 
             if (model.NumberOfHydrophonesAlongDepth <= 0)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.NumberOfHydrophonesAlongDepth)), new List<string> { "Number of hydrophones along depth should be > 0" });
+                validationErrors.Add(string.Format(template, nameof(model.NumberOfHydrophonesAlongDepth)), new List<string> { "Number of hydrophones along depth should be > 0" });
             }
 
             if (model.NumberOfHydrophonesAlongRange <= 0)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.NumberOfHydrophonesAlongRange)), new List<string> { "Number of hydrophones along range should be > 0" });
+                validationErrors.Add(string.Format(template, nameof(model.NumberOfHydrophonesAlongRange)), new List<string> { "Number of hydrophones along range should be > 0" });
             }
 
             if (model.HydrophoneDepths.Length != model.NumberOfHydrophonesAlongDepth)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.HydrophoneDepths)), new List<string> { "Hydrophone depths count != provided number of hydrophones along depth" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneDepths)), new List<string> { "Hydrophone depths count != provided number of hydrophones along depth" });
             }
 
             if (model.HydrophoneRanges.Length != model.NumberOfHydrophonesAlongRange)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.HydrophoneDepths)), new List<string> { "Hydrophone depths count != provided number of hydrophones along depth" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneRanges)), new List<string> { "Hydrophone depths count != provided number of hydrophones along depth" });
             }
 
             if (model.HydrophoneArrayType == CalculationModel.Models.ArrayType.Horizontal &&
                 model.HydrophoneDepths.Length != 1)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone depths for 'Horizontal' array type array should be 1" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone depths for 'Horizontal' array type array should be 1" });
             }
 
             if (model.HydrophoneArrayType == CalculationModel.Models.ArrayType.Vertical &&
                 model.HydrophoneRanges.Length != 1)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone ranges for 'Vertical' array type array should be 1" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone ranges for 'Vertical' array type array should be 1" });
             }
 
             if (model.HydrophoneArrayType == CalculationModel.Models.ArrayType.Linear &&
                 model.HydrophoneRanges.Length != model.HydrophoneDepths.Length)
             {
-                validationErrors.Add(string.Format(modelFieldName, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone ranges should be equal to number of depths for 'Linear' array type" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneArrayType)), new List<string> { "Number of hydrophone ranges should be equal to number of depths for 'Linear' array type" });
             }
 
             return validationErrors;
