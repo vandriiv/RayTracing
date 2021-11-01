@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
 using RayTracing.CalculationModel.Calculation;
 using RayTracing.CalculationModel.Common;
 using RayTracing.CalculationModel.Models;
@@ -10,8 +12,10 @@ using RayTracing.Web.Models.Problems;
 using RayTracing.Web.Models.Validators;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace RayTracing.Web.Pages
 {
@@ -53,6 +57,9 @@ namespace RayTracing.Web.Pages
         [BindProperty(SupportsGet = true)]
         public string Problem { get; set; }
 
+        [BindProperty]
+        public IFormFile InputFile { get; set; }
+
         public IActionResult OnGet()
         {
             ArrayTypes = EnumUtils.GetValues<ArrayType>().Select(x => x.ToNameIdModel());
@@ -64,7 +71,11 @@ namespace RayTracing.Web.Pages
             SurfacePropetyTypes = EnumUtils.GetValues<SurfacePropertyType>().Select(x => x.ToNameIdModel());
             SurfaceTypes = EnumUtils.GetValues<SurfaceType>().Select(x => x.ToNameIdModel());
 
-            if (AcousticProblem == null)
+            if (TempData.ContainsKey(nameof(AcousticProblem)))
+            {
+                AcousticProblem = JsonConvert.DeserializeObject<AcousticProblemDescription>((string)TempData[nameof(AcousticProblem)]);
+            }
+            else if (AcousticProblem == null)
             {
                 AcousticProblem = _commonProblems.GetAcousticProblem(Problem) ?? new AcousticProblemDescription();
             }
@@ -72,7 +83,7 @@ namespace RayTracing.Web.Pages
             return Page();
         }
 
-        public IActionResult OnPost()
+        public IActionResult OnPostSubmit()
         {
             if (!ModelState.IsValid)
             {
@@ -98,8 +109,62 @@ namespace RayTracing.Web.Pages
             }
             catch(CalculationException calculationException)
             {
+                Console.WriteLine(calculationException.StackTrace);
                 return BadRequest(new { ErrorMessage = calculationException.Message });
             }
+        }
+
+        public IActionResult OnPostSerialize()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var validationErrors = _validator.Validate(AcousticProblem, nameof(AcousticProblem));
+            if (validationErrors.Any())
+            {
+                ModelState.AddModelErrors(validationErrors);
+
+                return BadRequest(ModelState);
+            }
+
+            return Content(JsonConvert.SerializeObject(AcousticProblem));
+        }
+
+        public async Task<IActionResult> OnPostFileUpload()
+        {
+            ModelState.Clear();
+
+            if (InputFile == null || InputFile.Length == 0)
+            {
+                ModelState.AddModelError("", "File is not provided");
+                return OnGet();
+            }
+
+            if (Path.GetExtension(InputFile.FileName).ToLower() != ".json")
+            {
+                ModelState.AddModelError("", "Only JSON files allowed");
+                return OnGet();
+            }
+
+            using (var reader = new StreamReader(InputFile.OpenReadStream()))
+            {
+                var content = await reader.ReadToEndAsync();
+
+                try
+                {
+                    var acousticProblem = JsonConvert.DeserializeObject<AcousticProblemDescription>(content);
+                    TempData[nameof(AcousticProblem)] = JsonConvert.SerializeObject(acousticProblem);
+                }
+                catch (Exception)
+                {
+                    ModelState.AddModelError("", "File content can't be converted to problem description.");
+                    return OnGet();
+                }
+            }
+
+            return RedirectToPage();
         }
 
         private object MapCalculationResult(CalculationResult calculationResult, AcousticProblemDescription acousticProblem)

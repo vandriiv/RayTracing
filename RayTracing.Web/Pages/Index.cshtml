@@ -4,27 +4,43 @@
 @{
     ViewData["Title"] = "Underwater acoustic calculation";
 }
+
 <div class="card card-custom gutter-b example example-compact">
     <div class="card-header">
         <h3 class="card-title">Run calculation</h3>
     </div>
     <!--begin::Form-->
-    <form method="post">
-        <div class="card-body">
-            @if (!Model.ModelState.IsValid)
-            {
-                <div class="row">
-                    <div class="alert alert-custom alert-outline-2x alert-outline-danger fade show mb-5" role="alert">
-                        <div class="alert-icon"><i class="flaticon-warning"></i></div>
-                        <div asp-validation-summary="ModelOnly" class="text-danger alert-text"></div>
-                        <div class="alert-close">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true"><i class="ki ki-close"></i></span>
-                            </button>
-                        </div>
+    <div class="card-body">
+        @if (!Model.ModelState.IsValid)
+        {
+            <div class="row">
+                <div class="alert alert-custom alert-outline-2x alert-outline-danger fade show mb-5" role="alert">
+                    <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                    <div class="text-danger alert-text">
+                        @foreach(var error in Model.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                    <div class="alert-close">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                        </button>
                     </div>
                 </div>
-            }
+            </div>
+        }
+        <div class="row mb-3">
+            <div class="form-group">
+                <form method="post" id="input-file-form" asp-page-handler="FileUpload" enctype="multipart/form-data">
+                    <label class="btn btn-outline-info" for="input-file">
+                        <input id="input-file" asp-for="@Model.InputFile" type="file" accept="application/JSON" style="display:none" />
+                        Upload file
+                    </label>
+                </form>
+            </div>
+        </div>
+        <form method="post" id="input-form" asp-page-handler="submit">
             <div class="row">
                 <div class="col-12">
                     <h6>Source</h6>
@@ -496,12 +512,13 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" id="submit_Btn" class="btn btn-light-success mr-2">Submit</button>
-            <button type="button" id="downloadJson_Btn" style="display: none" class="btn btn-light-warning mr-2">Download result JSON</button>
-        </div>
-    </form>
+        </form>
+    </div>
+    <div class="card-footer">
+        <button type="submit" id="submit_Btn" class="btn btn-outline-info mr-2">Submit</button>
+        <button type="button" id="inputDownload_Btn" class="btn btn-outline-primary">Download form data</button>
+        <button type="button" id="downloadJson_Btn" style="display: none" class="btn btn-outline-warning mr-2">Download result JSON</button>
+    </div>
     <div id="plot-ssp">
     </div>
     <div id="plot-rayCoords">
@@ -1552,13 +1569,29 @@
                 }
             }
 
+            $("#inputDownload_Btn").on('click', function () {
+                if ($('#input-form').valid()) {
+                    $.post('/Index?handler=Serialize', $('#input-form').serialize())
+                        .done(function (response) {
+                            console.log(response);
+                            const fileToSave = new Blob([response], {
+                                type: 'application/json'
+                            });
+
+                            // Save the file
+                            saveAs(fileToSave, 'formData.json');
+                        })
+                        .fail(function (error) {
+                            console.log(error);
+                        });
+                }
+            });
+
             $("#downloadJson_Btn").on('click', function () {
-                // Create a blob of the data
                 const fileToSave = new Blob([JSON.stringify(latestJsonResult)], {
                     type: 'application/json'
                 });
 
-                // Save the file
                 saveAs(fileToSave, `${latestJsonResult.calculationType}.json`);
             });
 
@@ -1569,8 +1602,8 @@
                 $("#downloadJson_Btn").prop('disable', true);
                 $('div[id^="plot"]').empty();
 
-                if ($('form').valid()) {
-                    $.post('', $('form').serialize())
+                if ($('#input-form').valid()) {
+                    $.post('/Index?handler=Submit', $('#input-form').serialize())
                     .done(function (response) {
                         const { calculationType } = response;
                         latestJsonResult = response;
@@ -1620,6 +1653,15 @@
                     });
                 }
             });
+
+
+            $("#input-file").change(function () {
+                const file = this.files[0];
+
+                if (file) {
+                    $("#input-file-form").submit();
+                }
+            })
         });
     </script>
 }
