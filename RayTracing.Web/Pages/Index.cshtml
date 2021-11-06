@@ -1630,11 +1630,12 @@
                 evt.preventDefault();
                 clearErrors();
 
-                $("#submit_Btn").prop('disabled', true);
-                $("#downloadJson_Btn").prop('disable', true);
-                $('div[id^="plot"]').empty();
-
                 if ($('#input-form').valid()) {
+
+                    $("#submit_Btn").prop('disabled', true);
+                    $("#downloadJson_Btn").prop('disable', true);
+                    $('div[id^="plot"]').empty();
+
                     $.post('/Index?handler=Submit', $('#input-form').serialize())
                     .done(function (response) {
                         const { calculationType } = response;
