@@ -275,7 +275,7 @@ namespace RayTracing.Web.Models.Validators
 
             if (model.HydrophoneRanges.Length != model.NumberOfHydrophonesAlongRange)
             {
-                validationErrors.Add(string.Format(template, nameof(model.HydrophoneRanges)), new List<string> { "Hydrophone depths count != provided number of hydrophones along depth" });
+                validationErrors.Add(string.Format(template, nameof(model.HydrophoneRanges)), new List<string> { "Hydrophone range count != provided number of hydrophones along range" });
             }
 
             if (model.HydrophoneArrayType == CalculationModel.Models.ArrayType.Horizontal &&
